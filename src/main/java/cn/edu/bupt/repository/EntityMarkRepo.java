@@ -9,5 +9,7 @@ import java.util.List;
 
 public interface EntityMarkRepo extends JpaRepository<EntityMark, Long> {
 
-    List<EntityMark> findByPassedAndStatementIn(boolean passed, List<VerifyStatement> stats);
+    List<EntityMark> findByPassedAndStatementIn(int passed, List<VerifyStatement> statements);
+
+    int countByPassedAndStatement(int passed, VerifyStatement statement);
 }

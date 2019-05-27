@@ -7,6 +7,7 @@ import cn.edu.bupt.service.UserService;
 import cn.edu.bupt.util.ResponseResult;
 import cn.edu.bupt.util.token.Identity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,19 +23,23 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @GetMapping("list/entities")
     public ResponseResult<List<EntityMark>> reviewedEntities(@RequestBody Map<String, Object> params,
-                                                             HttpSession httpSession){
+                                                             HttpSession httpSession) {
         Identity identity = (Identity) httpSession.getAttribute(OauthConsts.KEY_IDENTITY);
         boolean passed = (boolean) params.get("passed");
-        List<EntityMark> marks = userService.listEntities(identity.getId(), passed);
+        int interPassed = passed ? 0 : 1;
+        List<EntityMark> marks = userService.listEntities(identity.getId(), interPassed);
         return ResponseResult.success(marks);
     }
 
+    @GetMapping("list/relations")
     public ResponseResult<List<RelationMark>> reviewedRelations(@RequestBody Map<String, Object> params,
-                                                                HttpSession session){
+                                                                HttpSession session) {
         Identity identity = (Identity) session.getAttribute(OauthConsts.KEY_IDENTITY);
         boolean passed = (boolean) params.get("passed");
-        return ResponseResult.success(userService.listRelations(identity.getId(), passed));
+        int interPassed = passed ? 0 : 1;
+        return ResponseResult.success(userService.listRelations(identity.getId(), interPassed));
     }
 
 }

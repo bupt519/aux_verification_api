@@ -64,10 +64,7 @@ public class UserService {
         } catch (NoSuchAlgorithmException e) {
             encryptedPsd = user.getPassword();
         }
-        if (!encryptedPsd.equals(userOptional.get().getPassword())) {
-            return false;
-        }
-        return true;
+        return encryptedPsd.equals(userOptional.get().getPassword());
     }
 
     @Transactional
@@ -77,14 +74,14 @@ public class UserService {
     }
 
     @Transactional
-    public List<EntityMark> listEntities(long userId, boolean passed) {
+    public List<EntityMark> listEntities(long userId, int passed) {
         User user = userRepo.getOne(userId);
         List<VerifyStatement> stats = verStateRepo.findByVerUser(user);
         return entityMarkRepo.findByPassedAndStatementIn(passed, stats);
     }
 
     @Transactional
-    public List<RelationMark> listRelations(long userId, boolean passed){
+    public List<RelationMark> listRelations(long userId, int passed){
         User user = userRepo.getOne(userId);
         List<VerifyStatement> stats = verStateRepo.findByVerUser(user);
         return relationMarkRepo.findByPassedAndStatementIn(passed, stats);

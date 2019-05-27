@@ -24,6 +24,9 @@ public class VerifyStatement {
     @JoinColumn(name = "user_id")
     private User verUser;
 
+    @Column(name = "state", columnDefinition = "int default 0")
+    private int state;
+
     @OneToMany(mappedBy = "statement", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<EntityMark> entityMarks;
 

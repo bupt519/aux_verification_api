@@ -1,4 +1,4 @@
-package cn.edu.bupt.auxverification;
+package cn.edu.bupt;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

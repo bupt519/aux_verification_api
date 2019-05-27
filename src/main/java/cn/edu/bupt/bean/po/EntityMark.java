@@ -15,7 +15,7 @@ public class EntityMark {
     private long id;
 
     @Column(columnDefinition = "TEXT")
-    private String text;
+    private String content;
 
     @Column(nullable = false, columnDefinition = "int default -1")
     private int passed;

@@ -8,5 +8,7 @@ import java.util.List;
 
 public interface RelationMarkRepo extends JpaRepository<RelationMark, Long> {
 
-    List<RelationMark> findByPassedAndStatementIn(boolean passed, List<VerifyStatement> stats);
+    List<RelationMark> findByPassedAndStatementIn(int passed, List<VerifyStatement> stats);
+
+    int countByPassedAndStatement(int passed, VerifyStatement statement);
 }

@@ -56,7 +56,7 @@ public class TokenUtil {
 
         // 封装成pojo
         Identity identity = new Identity();
-        identity.setId(Integer.parseInt(id));
+        identity.setId(Long.parseLong(id));
         identity.setClientId(clientId);
         identity.setDuration(claims.getExpiration().getTime());
 

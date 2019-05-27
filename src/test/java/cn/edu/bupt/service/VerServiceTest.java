@@ -90,7 +90,7 @@ public class VerServiceTest {
         EntityMark entity = verService.getEntity(2);
         Assert.assertEquals(entity.getPassed(), -1);
         Assert.assertEquals(entity.getReviewed(), 0);
-        Assert.assertNull(entity.getVerData());
+        Assert.assertNull(entity.getVerDate());
         Assert.assertEquals(entity.getStatement().getId(), 2);
         Assert.assertEquals(entity.getContent(),
                 "2006 年</nt>公司</no>实施安徽省第四期“</o>校校通</ni>”信息工程项目（合同总金额</o> 6023万元</nn>），需垫付大量资金</o>");

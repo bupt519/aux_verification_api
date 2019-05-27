@@ -4,6 +4,8 @@ import cn.edu.bupt.bean.po.EntityMark;
 import cn.edu.bupt.bean.po.RelationMark;
 import cn.edu.bupt.bean.po.User;
 import cn.edu.bupt.bean.po.VerifyStatement;
+import cn.edu.bupt.bean.vo.EntityListVo;
+import cn.edu.bupt.bean.vo.RelationListVo;
 import cn.edu.bupt.repository.EntityMarkRepo;
 import cn.edu.bupt.repository.RelationMarkRepo;
 import cn.edu.bupt.repository.UserRepo;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import sun.security.provider.MD5;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,17 +77,29 @@ public class UserService {
     }
 
     @Transactional
-    public List<EntityMark> listEntities(long userId, int passed) {
-        User user = userRepo.getOne(userId);
-        List<VerifyStatement> stats = verStateRepo.findByVerUser(user);
-        return entityMarkRepo.findByPassedAndStatementIn(passed, stats);
+    public List<EntityListVo> listEntities(long userId, int passed) {
+        Optional<User> userOptional = userRepo.findById(userId);
+        if (!userOptional.isPresent()) return null;
+        List<VerifyStatement> stats = verStateRepo.findByVerUser(userOptional.get());
+        List<EntityMark> marks = entityMarkRepo.findByPassedAndStatementIn(passed, stats);
+        List<EntityListVo> vos = new ArrayList<>();
+        for (EntityMark mark : marks) {
+            vos.add(new EntityListVo(mark));
+        }
+        return vos;
     }
 
     @Transactional
-    public List<RelationMark> listRelations(long userId, int passed){
-        User user = userRepo.getOne(userId);
-        List<VerifyStatement> stats = verStateRepo.findByVerUser(user);
-        return relationMarkRepo.findByPassedAndStatementIn(passed, stats);
+    public List<RelationListVo> listRelations(long userId, int passed) {
+        Optional<User> userOptional = userRepo.findById(userId);
+        if (!userOptional.isPresent()) return null;
+        List<VerifyStatement> stats = verStateRepo.findByVerUser(userOptional.get());
+        List<RelationMark> marks = relationMarkRepo.findByPassedAndStatementIn(passed, stats);
+        List<RelationListVo> vos = new ArrayList<>();
+        for (RelationMark mark : marks) {
+            vos.add(new RelationListVo(mark));
+        }
+        return vos;
     }
 
 }

@@ -7,6 +7,7 @@ import cn.edu.bupt.bean.po.VerifyStatement;
 import cn.edu.bupt.bean.vo.VerMarksVo;
 import cn.edu.bupt.repository.*;
 import cn.edu.bupt.util.ResponseResult;
+import cn.edu.bupt.util.ResultTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,26 +45,27 @@ public class VerService {
     public ResponseResult<String> dealWithEntity(long userId, long entityId, long statId, String content, int passed) {
         EntityMark record = getEntity(entityId);
         if (record == null)  // 需要审批的文本不存在
-            return ResponseResult.error("审批失败");
+            return ResponseResult.error(ResultTypeEnum.SERVICE_ERROR, "审批失败", null);
         // 提交的内容还没有分配审批人或系统记录的审批人id和用户id不相等
         if (record.getStatement() == null || record.getStatement().getVerUser() == null
-                || record.getStatement().getVerUser().getId() == userId) {
-            return ResponseResult.error("审批失败");
+                || record.getStatement().getVerUser().getId() != userId) {
+            return ResponseResult.error(ResultTypeEnum.SERVICE_ERROR, "审批失败", null);
         }
         // 审批文本所属段落的id和用户提交的段落id不相等
         if (record.getStatement().getId() != statId)
-            return ResponseResult.error("审批失败");
+            return ResponseResult.error(ResultTypeEnum.SERVICE_ERROR, "审批失败", null);
         record.setPassed(passed);
-        record.setVerData(new Date());
+        record.setVerDate(new Date());
         record.setContent(content);
         entityMarkRepo.saveAndFlush(record);
         // 如果该段落所有文本全部审核完毕，更新段落表的状态
-        if (entityMarkRepo.countByPassedAndStatement(-1, record.getStatement()) == 0) {
+        if (relationMarkRepo.countByPassedAndStatement(-1, record.getStatement()) == 0 &&
+                entityMarkRepo.countByPassedAndStatement(-1, record.getStatement()) == 0) {
             VerifyStatement statement = record.getStatement();
             statement.setState(2);
-            verStateRepo.saveAndFlush(statement);
+            verStateRepo.save(statement);
         }
-        return ResponseResult.success("审批成功");
+        return ResponseResult.success("审批成功", null);
     }
 
     @Transactional
@@ -71,18 +73,18 @@ public class VerService {
                                                    int passed, long relationId) {
         RelationMark record = getRelationMark(relationMarkId);
         if (record == null) { // 审批文本不存在
-            return ResponseResult.error("审批失败");
+            return ResponseResult.error(ResultTypeEnum.SERVICE_ERROR, "审批失败", null);
         }
         if (record.getStatement() == null || record.getStatement().getVerUser() == null ||
                 userId != record.getStatement().getVerUser().getId()) {
-            return ResponseResult.error("审批失败");
+            return ResponseResult.error(ResultTypeEnum.SERVICE_ERROR, "审批失败", null);
         }
-        if(record.getStatement().getId() != statId){
-            return ResponseResult.error("审批失败");
+        if (record.getStatement().getId() != statId) {
+            return ResponseResult.error(ResultTypeEnum.SERVICE_ERROR, "审批失败", null);
         }
         Optional<RelationReflect> refOptional = relaReflectRepo.findById(relationId);
         if (!refOptional.isPresent()) {
-            return ResponseResult.error("审批失败");
+            return ResponseResult.error(ResultTypeEnum.SERVICE_ERROR, "审批失败", null);
         }
         record.setContent(content);
         record.setPassed(passed);
@@ -95,7 +97,7 @@ public class VerService {
             statement.setState(2);
             verStateRepo.save(statement);
         }
-        return ResponseResult.success("审批成功");
+        return ResponseResult.success("审批成功", null);
     }
 
     @Transactional
@@ -105,7 +107,7 @@ public class VerService {
             VerifyStatement statement = statementOptional.get();
             statement.setVerUser(userRepo.getOne(userId));
             statement.setState(1);
-            verStateRepo.saveAndFlush(statement);
+            verStateRepo.save(statement);
 
             // 更新审批文本状态
             for (int i = 0, size = statement.getEntityMarks().size(); i < size; ++i) {
@@ -113,13 +115,11 @@ public class VerService {
                 mark.setReviewed(1);
                 entityMarkRepo.save(mark);
             }
-            entityMarkRepo.flush();
             for (int i = 0, size = statement.getRelationMarks().size(); i < size; ++i) {
                 RelationMark mark = statement.getRelationMarks().get(i);
                 mark.setReviewed(1);
                 relationMarkRepo.save(mark);
             }
-            relationMarkRepo.flush();
             VerMarksVo result = new VerMarksVo();
             result.setId(statement.getId());
             result.setPdfUrl(statement.getPdfUrl());

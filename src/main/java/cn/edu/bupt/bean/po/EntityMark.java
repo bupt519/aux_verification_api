@@ -1,5 +1,6 @@
 package cn.edu.bupt.bean.po;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -7,6 +8,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "entity_mark")
+@JsonIgnoreProperties(value={"hibernateLazyInitializer","handler","fieldHandler"})
 @Data
 public class EntityMark {
 
@@ -24,9 +26,10 @@ public class EntityMark {
     private int reviewed;
 
     @Column(name = "ver_date", columnDefinition = "date")
-    private Date verData;
+    private Date verDate;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "stat_id")
+    @JsonIgnoreProperties("entityMarks")
     private VerifyStatement statement;
 }

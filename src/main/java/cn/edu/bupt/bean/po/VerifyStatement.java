@@ -1,5 +1,6 @@
 package cn.edu.bupt.bean.po;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -7,6 +8,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "ver_statement")
+@JsonIgnoreProperties(value={"hibernateLazyInitializer","handler","fieldHandler"})
 @Data
 public class VerifyStatement {
 
@@ -28,8 +30,10 @@ public class VerifyStatement {
     private int state;
 
     @OneToMany(mappedBy = "statement", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("statement")
     private List<EntityMark> entityMarks;
 
     @OneToMany(mappedBy = "statement", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("statement")
     private List<RelationMark> relationMarks;
 }

@@ -2,9 +2,11 @@ package cn.edu.bupt.util;
 
 public enum ResultTypeEnum {
 
-    SERVICE_SUCCESS(200,"成功"),
-    PARAM_ERROR(400,"入参异常"),
-    SERVICE_ERROR(500,"服务异常");
+    SERVICE_SUCCESS(200,"OK"),
+    PARAM_ERROR(400,"Bad Request"),
+    SERVICE_ERROR(500,"Internal Server Error"),
+    UNAUTHORIZED_ERROR(401, "Unauthorized"),
+    NON_AUTHORITATIVE_INFORMATION_ERROR(203, "Non-Authoritative Information");
 
     private Integer code;
     private String message;

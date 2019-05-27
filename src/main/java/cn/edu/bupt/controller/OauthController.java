@@ -28,35 +28,38 @@ public class OauthController {
     }
 
     @PostMapping("register")
-    public ResponseResult<String> submitResister(@RequestBody User user){
+    public ResponseResult<String> submitResister(@RequestBody User user) {
         // 检查邮箱或密码是否为空
-        if(StringUtils.isEmpty(user.getEmail()) || StringUtils.isEmpty(user.getPassword())){
-            return ResponseResult.error("注册信息不完整");
+        if (StringUtils.isEmpty(user.getEmail()) || StringUtils.isEmpty(user.getPassword())) {
+            return ResponseResult.error(ResultTypeEnum.PARAM_ERROR, "注册信息不完整", null);
         }
         User resUser = userService.addUser(user);
-        if(resUser==null){
-            return ResponseResult.error("邮箱已被注册");
-        }else{
-            return ResponseResult.success("注册成功");
+        if (resUser == null) {
+            return ResponseResult.error(ResultTypeEnum.SERVICE_ERROR, "邮箱已被注册", null);
+        } else {
+            return ResponseResult.success("注册成功", null);
         }
     }
 
     @PostMapping("login")
-    public ResponseResult<Identity> submitLogin(@RequestBody User user){
-        if(StringUtils.isEmpty(user.getEmail())||StringUtils.isEmpty(user.getPassword())){
-            return ResponseResult.error(ResultTypeEnum.PARAM_ERROR, "登录参数不完整");
+    public ResponseResult<Identity> submitLogin(@RequestBody User user) {
+        // 检查登录参数是否为空
+        if (StringUtils.isEmpty(user.getEmail()) || StringUtils.isEmpty(user.getPassword())) {
+            return ResponseResult.error(ResultTypeEnum.PARAM_ERROR, "登录信息不完整", null);
         }
+        // 检查用户是否存在，密码是否正确
         boolean result = userService.verifyUser(user);
-        if(!result){
-            return ResponseResult.error(ResultTypeEnum.SERVICE_ERROR, "用户名或密码错误");
+        if (!result) {
+            return ResponseResult.error(ResultTypeEnum.SERVICE_ERROR, "用户名或密码错误", null);
         }
         User targetUser = userService.getUser(user.getEmail());
         Identity identity = new Identity();
-        if(targetUser != null){
-            identity.setId(user.getId());
+        if (targetUser != null) {
+            identity.setId(targetUser.getId());
             identity.setIssuer(envConsts.TOKEN_ISSUER);
-            identity.setClientId(user.getEmail());
+            identity.setClientId(targetUser.getEmail());
             identity.setDuration(envConsts.TOKEN_DURATION);
+            log.error("{}", identity);
             String token = TokenUtil.createToken(identity, envConsts.TOKEN_API_KEY_SECRET);
             identity.setToken(token);
         }
@@ -64,13 +67,13 @@ public class OauthController {
     }
 
     @RequestMapping("error/{code}")
-    public ResponseEntity<String> oauthError(@PathVariable("code") Integer code) {
+    public ResponseResult<String> oauthError(@PathVariable("code") Integer code) {
         log.debug("进入oauth错误返回控制器");
         if (code == HttpStatus.NON_AUTHORITATIVE_INFORMATION.value()) {
             // 如果错误码是认证信息不存在
-            return new ResponseEntity<>(HttpStatus.NON_AUTHORITATIVE_INFORMATION);
+            return ResponseResult.error(ResultTypeEnum.NON_AUTHORITATIVE_INFORMATION_ERROR);
         }
-        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        return ResponseResult.error(ResultTypeEnum.SERVICE_ERROR);
     }
 
 }

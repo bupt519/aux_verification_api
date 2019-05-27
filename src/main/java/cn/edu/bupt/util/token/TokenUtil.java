@@ -63,4 +63,16 @@ public class TokenUtil {
         return identity;
     }
 
+    public static void main(String[] args) {
+        Identity identity = parseToken("eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIwIiwiaWF0IjoxNTU4OTQ1MTM1LCJzdWIiOiIwLzEyM0BnbWFpbC5jb20iLCJpc3MiOiJhdXhfdmVyaWZpY2F0aW9uIiwiZXhwIjoxNTU4OTUxMTM1fQ.-zEwZnvzVEgrb8HFb2PU-2JXrolCeBw2Z68y0_iylDo",
+                "bupt_verification_510108199311080018");
+        System.out.println(identity);
+//        Identity identity = new Identity();
+//        identity.setId(1L);
+//        identity.setClientId("liwangadd@gmail.com");
+//        identity.setDuration(600000L);
+//        identity.setIssuer("aux verification");
+//        System.out.println(TokenUtil.createToken(identity, "bupt_verification_510108199311080018"));
+    }
+
 }

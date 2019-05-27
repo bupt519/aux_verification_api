@@ -42,7 +42,7 @@ public class AccessTokenCheckInterceptor extends HandlerInterceptorAdapter {
         } catch (Exception e) {
             log.debug("access_token无效, 原因为: {}", e.getMessage());
             log.debug("正转向认证失败控制器");
-            response.sendRedirect("/api/oauth/error/" + HttpStatus.NON_AUTHORITATIVE_INFORMATION);
+            response.sendRedirect("/api/oauth/error/" + HttpStatus.NON_AUTHORITATIVE_INFORMATION.value());
 
             return false;
         }

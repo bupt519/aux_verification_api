@@ -1,7 +1,5 @@
 package cn.edu.bupt.controller;
 
-import cn.edu.bupt.bean.po.EntityMark;
-import cn.edu.bupt.bean.po.RelationMark;
 import cn.edu.bupt.bean.vo.EntityListVo;
 import cn.edu.bupt.bean.vo.RelationListVo;
 import cn.edu.bupt.constant.OauthConsts;
@@ -22,8 +20,12 @@ import java.util.Map;
 @RequestMapping("api/user")
 public class UserController {
 
+    private final UserService userService;
+
     @Autowired
-    private UserService userService;
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping("entities")
     public ResponseResult<List<EntityListVo>> reviewedEntities(@RequestBody Map<String, Object> params,

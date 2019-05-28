@@ -6,6 +6,7 @@ import lombok.Data;
 import org.springframework.beans.BeanUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -65,5 +66,6 @@ public class VerMarksVo {
             vo.setRelationName(mark.getReflect().getRName());
             relationMarks.add(vo);
         }
+        relationMarks.sort((m1, m2) -> (int) (m1.getRelationId() - m2.getRelationId()));
     }
 }

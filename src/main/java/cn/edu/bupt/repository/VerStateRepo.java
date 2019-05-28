@@ -11,4 +11,6 @@ public interface VerStateRepo extends JpaRepository<VerifyStatement, Long> {
     List<VerifyStatement> findByVerUser(User user);
 
     Optional<VerifyStatement> findFirstByState(int state);
+
+    Optional<VerifyStatement> findByVerUserAndState(User user, int state);
 }

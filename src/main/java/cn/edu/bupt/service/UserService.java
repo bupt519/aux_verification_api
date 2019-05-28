@@ -12,11 +12,8 @@ import cn.edu.bupt.repository.UserRepo;
 import cn.edu.bupt.repository.VerStateRepo;
 import cn.edu.bupt.util.Md5Util;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sun.security.provider.MD5;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -26,17 +23,21 @@ import java.util.Optional;
 @Service
 public class UserService {
 
-    @Autowired
-    private UserRepo userRepo;
+    private final UserRepo userRepo;
+
+    private final VerStateRepo verStateRepo;
+
+    private final RelationMarkRepo relationMarkRepo;
+
+    private final EntityMarkRepo entityMarkRepo;
 
     @Autowired
-    private VerStateRepo verStateRepo;
-
-    @Autowired
-    private RelationMarkRepo relationMarkRepo;
-
-    @Autowired
-    private EntityMarkRepo entityMarkRepo;
+    public UserService(UserRepo userRepo, VerStateRepo verStateRepo, RelationMarkRepo relationMarkRepo, EntityMarkRepo entityMarkRepo) {
+        this.userRepo = userRepo;
+        this.verStateRepo = verStateRepo;
+        this.relationMarkRepo = relationMarkRepo;
+        this.entityMarkRepo = entityMarkRepo;
+    }
 
     @Transactional
     public User addUser(User user) {
@@ -61,7 +62,7 @@ public class UserService {
         if (!userOptional.isPresent()) {
             return false;
         }
-        String encryptedPsd = null;
+        String encryptedPsd;
         try {
             encryptedPsd = Md5Util.generate(user.getPassword());
         } catch (NoSuchAlgorithmException e) {

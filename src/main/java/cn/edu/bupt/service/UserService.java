@@ -1,17 +1,15 @@
 package cn.edu.bupt.service;
 
-import cn.edu.bupt.bean.po.EntityMark;
-import cn.edu.bupt.bean.po.RelationMark;
-import cn.edu.bupt.bean.po.User;
-import cn.edu.bupt.bean.po.VerifyStatement;
+import cn.edu.bupt.bean.po.*;
 import cn.edu.bupt.bean.vo.EntityListVo;
 import cn.edu.bupt.bean.vo.RelationListVo;
-import cn.edu.bupt.repository.EntityMarkRepo;
-import cn.edu.bupt.repository.RelationMarkRepo;
-import cn.edu.bupt.repository.UserRepo;
-import cn.edu.bupt.repository.VerStateRepo;
+import cn.edu.bupt.repository.*;
 import cn.edu.bupt.util.Md5Util;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,12 +29,15 @@ public class UserService {
 
     private final EntityMarkRepo entityMarkRepo;
 
+    private final RelaReflectRepo relaReflectRepo;
+
     @Autowired
-    public UserService(UserRepo userRepo, VerStateRepo verStateRepo, RelationMarkRepo relationMarkRepo, EntityMarkRepo entityMarkRepo) {
+    public UserService(UserRepo userRepo, VerStateRepo verStateRepo, RelationMarkRepo relationMarkRepo, EntityMarkRepo entityMarkRepo, RelaReflectRepo relaReflectRepo) {
         this.userRepo = userRepo;
         this.verStateRepo = verStateRepo;
         this.relationMarkRepo = relationMarkRepo;
         this.entityMarkRepo = entityMarkRepo;
+        this.relaReflectRepo = relaReflectRepo;
     }
 
     @Transactional
@@ -78,29 +79,37 @@ public class UserService {
     }
 
     @Transactional
-    public List<EntityListVo> listEntities(long userId, int passed) {
+    public EntityListVo listEntities(long userId, /*int passed, */int pageNo, int pageSize) {
         Optional<User> userOptional = userRepo.findById(userId);
         if (!userOptional.isPresent()) return null;
         List<VerifyStatement> stats = verStateRepo.findByVerUser(userOptional.get());
-        List<EntityMark> marks = entityMarkRepo.findByPassedAndStatementIn(passed, stats);
-        List<EntityListVo> vos = new ArrayList<>();
-        for (EntityMark mark : marks) {
-            vos.add(new EntityListVo(mark));
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.Direction.DESC, "verDate");
+        Page<EntityMark> pageResult = entityMarkRepo.findByStatementIn(stats, pageable);
+        List<EntityListVo.EntityHistory> entities = new ArrayList<>();
+        for (EntityMark mark : pageResult.getContent()) {
+            entities.add(new EntityListVo.EntityHistory(mark));
         }
-        return vos;
+        return new EntityListVo(pageResult.getTotalElements(), pageNo, entities);
     }
 
     @Transactional
-    public List<RelationListVo> listRelations(long userId, int passed) {
+    public RelationListVo listRelations(long userId, /*int passed,*/ int pageNo, int pageSize) {
         Optional<User> userOptional = userRepo.findById(userId);
         if (!userOptional.isPresent()) return null;
         List<VerifyStatement> stats = verStateRepo.findByVerUser(userOptional.get());
-        List<RelationMark> marks = relationMarkRepo.findByPassedAndStatementIn(passed, stats);
-        List<RelationListVo> vos = new ArrayList<>();
-        for (RelationMark mark : marks) {
-            vos.add(new RelationListVo(mark));
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.Direction.DESC, "verDate");
+        Page<RelationMark> pageResult = relationMarkRepo.findByStatementIn(/*passed,*/ stats, pageable);
+        List<RelationReflect> reflects = relaReflectRepo.findAll();
+        List<RelationListVo.Reflect> reflectsVos = new ArrayList<>();
+        for (RelationReflect reflect : reflects) {
+            RelationListVo.Reflect reflectVo = new RelationListVo.Reflect(reflect.getId(), reflect.getRName());
+            reflectsVos.add(reflectVo);
         }
-        return vos;
+        List<RelationListVo.RelationHistory> relations = new ArrayList<>();
+        for (RelationMark mark : pageResult) {
+            relations.add(new RelationListVo.RelationHistory(mark, reflectsVos));
+        }
+        return new RelationListVo(pageNo, pageResult.getNumberOfElements(), relations);
     }
 
 }

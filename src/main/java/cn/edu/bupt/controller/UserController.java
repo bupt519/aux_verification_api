@@ -1,19 +1,20 @@
 package cn.edu.bupt.controller;
 
+import cn.edu.bupt.bean.po.User;
 import cn.edu.bupt.bean.vo.EntityListVo;
 import cn.edu.bupt.bean.vo.RelationListVo;
+import cn.edu.bupt.bean.vo.UserInfoVo;
 import cn.edu.bupt.constant.OauthConsts;
+import cn.edu.bupt.constant.ParamConsts;
 import cn.edu.bupt.service.UserService;
 import cn.edu.bupt.util.ResponseResult;
-import cn.edu.bupt.util.token.Identity;
+import cn.edu.bupt.bean.vo.Identity;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -27,24 +28,39 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("entities")
-    public ResponseResult<List<EntityListVo>> reviewedEntities(@RequestBody Map<String, Object> params,
-                                                               HttpSession httpSession) {
+    @PostMapping("entities")
+    public ResponseResult<EntityListVo> reviewedEntities(@RequestBody Map<String, Object> params,
+                                                         HttpSession httpSession) {
         Identity identity = (Identity) httpSession.getAttribute(OauthConsts.KEY_IDENTITY);
-        boolean passed = (boolean) params.get("passed");
-        int interPassed = passed ? 1 : 0;
-        List<EntityListVo> marks = userService.listEntities(identity.getId(), interPassed);
-        return ResponseResult.success(marks);
+//        boolean passed = (boolean) params.get("passed");
+        int pageNo = (int) params.get(ParamConsts.pageNo);
+        int pageSize = (int) params.get(ParamConsts.pageSize);
+//        int interPassed = passed ? 1 : 0;
+        EntityListVo marks = userService.listEntities(identity.getId() /*interPassed*/, pageNo, pageSize);
+        return ResponseResult.of("success", marks);
     }
 
-    @GetMapping("relations")
-    public ResponseResult<List<RelationListVo>> reviewedRelations(@RequestBody Map<String, Object> params,
-                                                                  HttpSession session) {
+    @PostMapping("relations")
+    public ResponseResult<RelationListVo> reviewedRelations(@RequestBody Map<String, Object> params,
+                                                            HttpSession session) {
         Identity identity = (Identity) session.getAttribute(OauthConsts.KEY_IDENTITY);
-        boolean passed = (boolean) params.get("passed");
-        int interPassed = passed ? 1 : 0;
-        List<RelationListVo> marks = userService.listRelations(identity.getId(), interPassed);
-        return ResponseResult.success(marks);
+//        boolean passed = (boolean) params.get("passed");
+        int pageNo = (int) params.get(ParamConsts.pageNo);
+        int pageSize = (int) params.get(ParamConsts.pageSize);
+//        int interPassed = passed ? 1 : 0;
+        RelationListVo marks = userService.listRelations(identity.getId(), /*interPassed,*/ pageNo, pageSize);
+        return ResponseResult.of("success", marks);
+    }
+
+    @GetMapping("info")
+    public ResponseEntity<ResponseResult<UserInfoVo>> getUserInfo(HttpSession session) {
+        Identity identity = (Identity) session.getAttribute(OauthConsts.KEY_IDENTITY);
+        User user = userService.getUser(identity.getClientId());
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(null);
+        }
+        return ResponseEntity.ok(ResponseResult.of("success", new UserInfoVo(user)));
     }
 
 }

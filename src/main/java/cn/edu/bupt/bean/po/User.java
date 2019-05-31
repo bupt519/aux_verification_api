@@ -18,7 +18,16 @@ public class User {
 
     private String email;
 
+    @Column(columnDefinition = "varchar(255) default '天野远子'")
+    private String name;
+
+    @Column(columnDefinition = "varchar(255) default '/avatar.2.jpg'")
+    private String avatar;
+
     private String password;
+
+    @Column(columnDefinition = "varchar(255) default 'admin'")
+    private String role;
 
     @OneToMany(mappedBy = "verUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties("verUser")

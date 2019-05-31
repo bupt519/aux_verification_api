@@ -8,13 +8,16 @@ import java.util.Date;
 
 @Entity
 @Table(name = "entity_mark")
-@JsonIgnoreProperties(value={"hibernateLazyInitializer","handler","fieldHandler"})
+@JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler", "fieldHandler"})
 @Data
 public class EntityMark {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+    @Column(columnDefinition = "text")
+    private String originContent;
 
     @Column(columnDefinition = "TEXT")
     private String content;

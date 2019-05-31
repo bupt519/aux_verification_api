@@ -1,19 +1,19 @@
 package cn.edu.bupt.controller;
 
 import cn.edu.bupt.bean.po.User;
+import cn.edu.bupt.bean.vo.Identity;
 import cn.edu.bupt.constant.EnvConsts;
 import cn.edu.bupt.service.UserService;
 import cn.edu.bupt.util.ResponseResult;
-import cn.edu.bupt.util.ResultTypeEnum;
-import cn.edu.bupt.util.token.Identity;
 import cn.edu.bupt.util.token.TokenUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api/oauth")
+@RequestMapping("api/auth")
 @Slf4j
 public class OauthController {
 
@@ -27,32 +27,39 @@ public class OauthController {
     }
 
     @PostMapping("register")
-    public ResponseResult<String> submitResister(@RequestBody User user) {
+    public ResponseEntity<ResponseResult<String>> submitResister(@RequestBody User user) {
         // 检查邮箱或密码是否为空
         if (StringUtils.isEmpty(user.getEmail()) || StringUtils.isEmpty(user.getPassword())) {
-            return ResponseResult.error(ResultTypeEnum.PARAM_ERROR, "注册信息不完整", null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ResponseResult.of("注册信息不完整", "注册失败"));
+//            return ResponseResult.error(ResultTypeEnum.PARAM_ERROR, "注册信息不完整", null);
         }
         User resUser = userService.addUser(user);
         if (resUser == null) {
-            return ResponseResult.error(ResultTypeEnum.SERVICE_ERROR, "邮箱已被注册", null);
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(ResponseResult.of("邮箱已被注册", "注册失败"));
+//            return ResponseResult.error(ResultTypeEnum.SERVICE_ERROR, "邮箱已被注册", null);
         } else {
-            return ResponseResult.success("注册成功", null);
+            return ResponseEntity.ok(ResponseResult.of("注册成功", "注册成功"));
+//            return ResponseResult.success("注册成功", null);
         }
     }
 
     @PostMapping("login")
-    public ResponseResult<Identity> submitLogin(@RequestBody User user) {
+    public ResponseEntity<ResponseResult<Identity>> submitLogin(@RequestBody User user) {
+        Identity identity = new Identity();
+        identity.setLogin(true);
         // 检查登录参数是否为空
         if (StringUtils.isEmpty(user.getEmail()) || StringUtils.isEmpty(user.getPassword())) {
-            return ResponseResult.error(ResultTypeEnum.PARAM_ERROR, "登录信息不完整", null);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseResult.of("登录信息不完整", identity));
         }
         // 检查用户是否存在，密码是否正确
         boolean result = userService.verifyUser(user);
         if (!result) {
-            return ResponseResult.error(ResultTypeEnum.SERVICE_ERROR, "用户名或密码错误", null);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseResult.of("用户名或密码错误", identity));
         }
         User targetUser = userService.getUser(user.getEmail());
-        Identity identity = new Identity();
+//        Identity identity = new Identity();
         if (targetUser != null) {
             identity.setId(targetUser.getId());
             identity.setIssuer(envConsts.TOKEN_ISSUER);
@@ -62,17 +69,26 @@ public class OauthController {
             String token = TokenUtil.createToken(identity, envConsts.TOKEN_API_KEY_SECRET);
             identity.setToken(token);
         }
-        return ResponseResult.success("登录成功", identity);
+        return ResponseEntity.ok(ResponseResult.of("登录成功", identity));
+    }
+
+    @PostMapping("logout")
+    public ResponseEntity<ResponseResult<String>> submitLogout() {
+        return ResponseEntity.ok(ResponseResult.of("登出成功", "登出成功"));
+//        return ResponseResult.success("登出成功", null);
     }
 
     @RequestMapping("error/{code}")
-    public ResponseResult<String> oauthError(@PathVariable("code") Integer code) {
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ResponseEntity<String> oauthError(@PathVariable("code") Integer code) {
         log.debug("进入oauth错误返回控制器");
         if (code == HttpStatus.NON_AUTHORITATIVE_INFORMATION.value()) {
             // 如果错误码是认证信息不存在
-            return ResponseResult.error(ResultTypeEnum.NON_AUTHORITATIVE_INFORMATION_ERROR);
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("认证失败");
+//            return ResponseResult.error(ResultTypeEnum.NON_AUTHORITATIVE_INFORMATION_ERROR);
         }
-        return ResponseResult.error(ResultTypeEnum.SERVICE_ERROR);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("服务器内部错误");
+//        return ResponseResult.error(ResultTypeEnum.SERVICE_ERROR);
     }
 
 }

@@ -9,7 +9,7 @@ public class EntityParam {
 
     private String content;
 
-    private boolean passed;
+    private int passed;
 
     private long statId;
 

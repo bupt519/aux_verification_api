@@ -16,6 +16,9 @@ public class RelationMark {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column(columnDefinition = "text")
+    private String originContent;
+
     @Column(columnDefinition = "TEXT")
     private String content;
 

@@ -26,8 +26,12 @@ public class VerifyStatement {
     @JoinColumn(name = "user_id")
     private User verUser;
 
+    @Column(name = "mark_user", columnDefinition = "varchar(10)")
+    private String markUser;
+
     @Column(name = "state", columnDefinition = "int default 0")
-    private int state;
+    @Enumerated(EnumType.ORDINAL)
+    private State state;
 
     @OneToMany(mappedBy = "statement", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties("statement")
@@ -36,4 +40,10 @@ public class VerifyStatement {
     @OneToMany(mappedBy = "statement", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties("statement")
     private List<RelationMark> relationMarks;
+
+    public enum State{
+        UNSTARTED,
+        STARTED,
+        END
+    }
 }

@@ -9,7 +9,7 @@ public class RelationParam {
 
     private String content;
 
-    private boolean passed;
+    private int passed;
 
     private long relationId;
 

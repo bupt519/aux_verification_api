@@ -1,5 +1,6 @@
 package cn.edu.bupt.util.token;
 
+import cn.edu.bupt.bean.vo.Identity;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;

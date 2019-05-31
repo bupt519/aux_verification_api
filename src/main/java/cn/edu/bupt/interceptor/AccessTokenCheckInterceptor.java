@@ -2,7 +2,7 @@ package cn.edu.bupt.interceptor;
 
 import cn.edu.bupt.constant.EnvConsts;
 import cn.edu.bupt.constant.OauthConsts;
-import cn.edu.bupt.util.token.Identity;
+import cn.edu.bupt.bean.vo.Identity;
 import cn.edu.bupt.util.token.TokenUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +42,8 @@ public class AccessTokenCheckInterceptor extends HandlerInterceptorAdapter {
         } catch (Exception e) {
             log.debug("access_token无效, 原因为: {}", e.getMessage());
             log.debug("正转向认证失败控制器");
-            response.sendRedirect("/api/oauth/error/" + HttpStatus.NON_AUTHORITATIVE_INFORMATION.value());
+//            response.sendRedirect("/api/auth/error/" + HttpStatus.NON_AUTHORITATIVE_INFORMATION.value());
+            response.sendError(HttpStatus.UNAUTHORIZED.value());
 
             return false;
         }

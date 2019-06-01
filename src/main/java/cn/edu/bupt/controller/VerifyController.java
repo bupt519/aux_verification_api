@@ -38,7 +38,8 @@ public class VerifyController {
                     .body(ResponseResult.of("审核失败", "审核失败"));
 //            return ResponseResult.error(ResultTypeEnum.PARAM_ERROR, "审核失败", null);
         }
-        ResponseResult<String> result = verService.dealWithEntity(identity.getId(), param.getId(), param.getStatId(), param.getContent(), param.getPassed());
+        ResponseResult<String> result = verService.dealWithEntity(identity.getId(), param.getId(),
+                param.getStatId(), param.getContent(), param.getPassed(), param.getDescription());
         return ResponseEntity.ok(result);
     }
 
@@ -51,7 +52,7 @@ public class VerifyController {
 //            return ResponseResult.error(ResultTypeEnum.PARAM_ERROR, "审批失败", null);
         }
         ResponseResult<String> result = verService.dealWithRelation(identity.getId(), param.getId(), param.getStatId(),
-                param.getContent(), param.getPassed(), param.getRelationId());
+                param.getContent(), param.getPassed(), param.getRelationId(), param.getDescription());
         return ResponseEntity.ok(result);
     }
 

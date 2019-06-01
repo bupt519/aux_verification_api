@@ -39,7 +39,8 @@ public class VerService {
     }
 
     @Transactional
-    public ResponseResult<String> dealWithEntity(long userId, long entityId, long statId, String content, int passed) {
+    public ResponseResult<String> dealWithEntity(long userId, long entityId, long statId, String content, int passed,
+                                                 String description) {
         EntityMark record = getEntity(entityId);
         if (record == null)  // 审批文本不存在
             return ResponseResult.of("审批失败", null);
@@ -54,7 +55,15 @@ public class VerService {
         record.setPassed(passed);
         record.setVerDate(new Date());
         record.setContent(content);
-        entityMarkRepo.saveAndFlush(record);
+        record.setDescription(description);
+        if (content.equals(record.getOriginContent())) {
+            if (passed == 0) record.setVerifyResult(VerifyResult.DENIED);
+            else record.setVerifyResult(VerifyResult.MODIFY_DENIED);
+        } else {
+            if (passed == 0) record.setVerifyResult(VerifyResult.ACCEPT);
+            else record.setVerifyResult(VerifyResult.MODIFY_ACCEPT);
+        }
+        entityMarkRepo.save(record);
         // 如果该段落所有文本全部审核完毕，更新段落表的状态
 //        if (relationMarkRepo.countByPassedAndStatement(-1, record.getStatement()) == 0 &&
 //                entityMarkRepo.countByPassedAndStatement(-1, record.getStatement()) == 0) {
@@ -67,7 +76,7 @@ public class VerService {
 
     @Transactional
     public ResponseResult<String> dealWithRelation(long userId, long relationMarkId, long statId, String content,
-                                                   int passed, long relationId) {
+                                                   int passed, long relationId, String description) {
         RelationMark record = getRelationMark(relationMarkId);
         if (record == null) { // 审批文本不存在
             return ResponseResult.of("审批失败", null);
@@ -89,7 +98,15 @@ public class VerService {
         record.setContent(content);
         record.setPassed(passed);
         record.setVerDate(new Date());
+        record.setDescription(description);
         record.setReflect(refOptional.get());
+        if (content.equals(record.getOriginContent())) {
+            if (passed == 0) record.setVerifyResult(VerifyResult.DENIED);
+            else record.setVerifyResult(VerifyResult.MODIFY_DENIED);
+        } else {
+            if (passed == 0) record.setVerifyResult(VerifyResult.ACCEPT);
+            else record.setVerifyResult(VerifyResult.MODIFY_ACCEPT);
+        }
         relationMarkRepo.save(record);
         // 如果该段落所有文本全部审核完毕，更新段落表的状态
 //        if (relationMarkRepo.countByPassedAndStatement(-1, record.getStatement()) == 0 &&

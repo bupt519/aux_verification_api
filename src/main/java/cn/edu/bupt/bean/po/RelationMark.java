@@ -31,6 +31,12 @@ public class RelationMark {
     @Column(name = "ver_date", columnDefinition = "date")
     private Date verDate;
 
+    private String description;
+
+    @Column(name = "verify_result", columnDefinition = "int default -1")
+    @Enumerated(EnumType.ORDINAL)
+    private VerifyResult verifyResult;
+
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "stat_id")
     @JsonIgnoreProperties("relationMarks")

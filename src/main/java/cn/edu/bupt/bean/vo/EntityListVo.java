@@ -27,6 +27,7 @@ public class EntityListVo {
         private long statId;
         private String pdfUrl;
         private int pdfNo;
+        private String description;
 
         public EntityHistory(EntityMark mark) {
             BeanUtils.copyProperties(mark, this);

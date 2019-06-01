@@ -29,6 +29,7 @@ public class RelationListVo {
         private long statId;
         private String pdfUrl;
         private int pdfNo;
+        private String description;
         private List<Reflect> reflects;
 
         public RelationHistory(RelationMark mark, List<Reflect> reflects) {

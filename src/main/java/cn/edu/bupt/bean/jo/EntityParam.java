@@ -13,4 +13,6 @@ public class EntityParam {
 
     private long statId;
 
+    private String description;
+
 }

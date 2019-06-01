@@ -43,6 +43,7 @@ public class VerMarksVo {
         private List<Reflect> reflects;
         private long stateId;
         private int type;
+        private String description;
     }
 
     @Data
@@ -62,6 +63,7 @@ public class VerMarksVo {
             vo.setVerDate(originMark.getVerDate());
             vo.setType(0);
             vo.setStateId(originMark.getStatement().getId());
+            vo.setDescription(originMark.getDescription());
             data.add(vo);
         }
     }
@@ -79,6 +81,7 @@ public class VerMarksVo {
             vo.setReflects(reflects);
             vo.setType(1);
             vo.setStateId(originMark.getStatement().getId());
+            vo.setDescription(originMark.getDescription());
             data.add(vo);
         }
     }

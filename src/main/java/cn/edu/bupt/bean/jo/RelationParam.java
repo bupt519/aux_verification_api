@@ -15,4 +15,6 @@ public class RelationParam {
 
     private long statId;
 
+    private String description;
+
 }

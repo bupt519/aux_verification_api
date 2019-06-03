@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -86,6 +87,22 @@ public class VerifyController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ResponseResult.of("没有需要审核的文本", "没有需要审核的文本"));
+        }
+    }
+
+    @PostMapping("opinion/prefix")
+    public ResponseEntity<ResponseResult<List<String>>> prefixOpinion(@RequestBody Map<String, Object> params) {
+        String prefix;
+        if (params.containsKey("prefix")) {
+            prefix = (String) params.get("prefix");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseResult.of("参数不存在"));
+        }
+        List<String> opinions = verService.beginWithPrefixOpinion(prefix);
+        if (opinions == null || opinions.size() == 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseResult.of("结果为空"));
+        } else {
+            return ResponseEntity.ok(ResponseResult.of("success", opinions));
         }
     }
 

@@ -34,8 +34,8 @@ public class RelationMark {
     private String description;
 
     @Column(name = "verify_result", columnDefinition = "int default -1")
-    @Enumerated(EnumType.ORDINAL)
-    private VerifyResult verifyResult;
+//    @Enumerated(EnumType.ORDINAL)
+    private int verifyResult;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "stat_id")

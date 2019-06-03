@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -28,14 +29,17 @@ public class VerService {
 
     private final UserRepo userRepo;
 
+    private final MarkOpinionRepo markOpinionRepo;
+
     @Autowired
     public VerService(EntityMarkRepo entityMarkRepo, RelationMarkRepo relationMarkRepo, VerStateRepo verStateRepo,
-                      RelaReflectRepo relaReflectRepo, UserRepo userRepo) {
+                      RelaReflectRepo relaReflectRepo, UserRepo userRepo, MarkOpinionRepo markOpinionRepo) {
         this.entityMarkRepo = entityMarkRepo;
         this.relationMarkRepo = relationMarkRepo;
         this.verStateRepo = verStateRepo;
         this.relaReflectRepo = relaReflectRepo;
         this.userRepo = userRepo;
+        this.markOpinionRepo = markOpinionRepo;
     }
 
     @Transactional
@@ -57,11 +61,11 @@ public class VerService {
         record.setContent(content);
         record.setDescription(description);
         if (content.equals(record.getOriginContent())) {
-            if (passed == 0) record.setVerifyResult(VerifyResult.DENIED);
-            else record.setVerifyResult(VerifyResult.MODIFY_DENIED);
+            if (passed == 0) record.setVerifyResult(VerifyResult.DENIED.ordinal());
+            else record.setVerifyResult(VerifyResult.MODIFY_DENIED.ordinal());
         } else {
-            if (passed == 0) record.setVerifyResult(VerifyResult.ACCEPT);
-            else record.setVerifyResult(VerifyResult.MODIFY_ACCEPT);
+            if (passed == 0) record.setVerifyResult(VerifyResult.ACCEPT.ordinal());
+            else record.setVerifyResult(VerifyResult.MODIFY_ACCEPT.ordinal());
         }
         entityMarkRepo.save(record);
         // 如果该段落所有文本全部审核完毕，更新段落表的状态
@@ -101,11 +105,11 @@ public class VerService {
         record.setDescription(description);
         record.setReflect(refOptional.get());
         if (content.equals(record.getOriginContent())) {
-            if (passed == 0) record.setVerifyResult(VerifyResult.DENIED);
-            else record.setVerifyResult(VerifyResult.MODIFY_DENIED);
+            if (passed == 0) record.setVerifyResult(VerifyResult.DENIED.ordinal());
+            else record.setVerifyResult(VerifyResult.MODIFY_DENIED.ordinal());
         } else {
-            if (passed == 0) record.setVerifyResult(VerifyResult.ACCEPT);
-            else record.setVerifyResult(VerifyResult.MODIFY_ACCEPT);
+            if (passed == 0) record.setVerifyResult(VerifyResult.ACCEPT.ordinal());
+            else record.setVerifyResult(VerifyResult.MODIFY_ACCEPT.ordinal());
         }
         relationMarkRepo.save(record);
         // 如果该段落所有文本全部审核完毕，更新段落表的状态
@@ -123,7 +127,7 @@ public class VerService {
         Optional<VerifyStatement> statementOptional = Optional.empty();
         Optional<User> user = userRepo.findById(userId);
         if (user.isPresent()) { // 如果用户在上次审批时，没有将该段落的所有文本全部审核完毕
-            statementOptional = verStateRepo.findByVerUserAndState(user.get(), 1);
+            statementOptional = verStateRepo.findByVerUserAndState(user.get(), VerifyStatement.State.STARTED.ordinal());
         }
 //        if (!statementOptional.isPresent()) { // 查找第一条待审核的段落
 //            statementOptional = verStateRepo.findFirstByState(0);
@@ -158,8 +162,12 @@ public class VerService {
             for (RelationReflect originReflect : originReflects) {
                 reflects.add(new VerMarksVo.Reflect(originReflect.getId(), originReflect.getRName()));
             }
-            result.addEntities(statement.getEntityMarks());
-            result.addRelations(statement.getRelationMarks(), reflects);
+            if (statement.getEntityMarks() != null && statement.getEntityMarks().size() > 0) {
+                result.addEntities(statement.getEntityMarks());
+            }
+            if (statement.getRelationMarks() != null && statement.getRelationMarks().size() > 0) {
+                result.addRelations(statement.getRelationMarks(), reflects);
+            }
             result.setPageNo(1);
             result.setTotalCount(result.getData().size());
             return result;
@@ -184,38 +192,52 @@ public class VerService {
         Optional<VerifyStatement> statementOptional = Optional.empty();
         Optional<User> userOptional = userRepo.findById(id);
         if (userOptional.isPresent()) {
-            statementOptional = verStateRepo.findByVerUserAndState(userOptional.get(), 1);
+            statementOptional = verStateRepo.findByVerUserAndState(userOptional.get(), VerifyStatement.State.STARTED.ordinal());
         }
         if (statementOptional.isPresent()) {
             if (completeLast) {
                 VerifyStatement statement = statementOptional.get();
-                statement.setState(VerifyStatement.State.END);
+                statement.setState(VerifyStatement.State.END.ordinal());
                 verStateRepo.save(statement);
             } else {
                 return true;
             }
         }
-        statementOptional = verStateRepo.findFirstByState(0);
+        statementOptional = verStateRepo.findFirstByState(VerifyStatement.State.UNSTARTED.ordinal());
         if (statementOptional.isPresent()) {
             VerifyStatement statement = statementOptional.get();
-            statement.setVerUser(userRepo.getOne(id));
-            statement.setState(VerifyStatement.State.STARTED);
-            verStateRepo.save(statement);
             // 更新审批文本状态
+//            if (statement.getEntityMarks() != null && statement.getEntityMarks().size() > 0) {
             for (int i = 0, size = statement.getEntityMarks().size(); i < size; ++i) {
                 EntityMark mark = statement.getEntityMarks().get(i);
                 // 文本更新为已审核状态
                 mark.setReviewed(1);
                 entityMarkRepo.save(mark);
             }
+//            }
+//            if (statement.getRelationMarks() != null && statement.getRelationMarks().size() > 0) {
             for (int i = 0, size = statement.getRelationMarks().size(); i < size; ++i) {
                 RelationMark mark = statement.getRelationMarks().get(i);
                 // 文本更新为已审核状态
                 mark.setReviewed(1);
                 relationMarkRepo.save(mark);
+//                }
             }
+            statement.setVerUser(userRepo.getOne(id));
+            statement.setState(VerifyStatement.State.STARTED.ordinal());
+            verStateRepo.save(statement);
             return true;
         }
         return false;
+    }
+
+    @Transactional
+    public List<String> beginWithPrefixOpinion(String prefix){
+        List<MarkOpinion> markOpinions = markOpinionRepo.findByOpinionStartingWith(prefix);
+        List<String> opinions = null;
+        if(markOpinions!=null&&markOpinions.size()>0){
+            opinions = markOpinions.stream().map(MarkOpinion::getOpinion).collect(Collectors.toList());
+        }
+        return opinions;
     }
 }

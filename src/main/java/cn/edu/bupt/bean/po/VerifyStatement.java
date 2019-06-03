@@ -30,8 +30,8 @@ public class VerifyStatement {
     private String markUser;
 
     @Column(name = "state", columnDefinition = "int default 0")
-    @Enumerated(EnumType.ORDINAL)
-    private State state;
+//    @Enumerated(EnumType.ORDINAL)
+    private int state;
 
     @OneToMany(mappedBy = "statement", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties("statement")

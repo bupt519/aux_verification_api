@@ -4,6 +4,7 @@ import cn.edu.bupt.bean.jo.EntityParam;
 import cn.edu.bupt.bean.jo.RelationParam;
 import cn.edu.bupt.bean.vo.Identity;
 import cn.edu.bupt.bean.vo.VerMarksVo;
+import cn.edu.bupt.bean.vo.EntityReflectVo;
 import cn.edu.bupt.constant.OauthConsts;
 import cn.edu.bupt.constant.ParamConsts;
 import cn.edu.bupt.service.VerService;
@@ -104,6 +105,12 @@ public class VerifyController {
         } else {
             return ResponseEntity.ok(ResponseResult.of("success", opinions));
         }
+    }
+
+    @GetMapping("util/entiReflect")
+    public ResponseEntity<ResponseResult<EntityReflectVo>> entityRelfectList(){
+        EntityReflectVo result = this.verService.getEntityReflect();
+        return ResponseEntity.ok(ResponseResult.of("success", result));
     }
 
 }

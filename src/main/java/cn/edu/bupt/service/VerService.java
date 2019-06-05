@@ -2,6 +2,7 @@ package cn.edu.bupt.service;
 
 import cn.edu.bupt.bean.po.*;
 import cn.edu.bupt.bean.vo.VerMarksVo;
+import cn.edu.bupt.bean.vo.EntityReflectVo;
 import cn.edu.bupt.repository.*;
 import cn.edu.bupt.util.ResponseResult;
 import lombok.extern.slf4j.Slf4j;
@@ -31,15 +32,18 @@ public class VerService {
 
     private final MarkOpinionRepo markOpinionRepo;
 
+    private final EntiReflectRepo entiReflectRepo;
+
     @Autowired
     public VerService(EntityMarkRepo entityMarkRepo, RelationMarkRepo relationMarkRepo, VerStateRepo verStateRepo,
-                      RelaReflectRepo relaReflectRepo, UserRepo userRepo, MarkOpinionRepo markOpinionRepo) {
+                      RelaReflectRepo relaReflectRepo, UserRepo userRepo, MarkOpinionRepo markOpinionRepo, EntiReflectRepo entiReflectRepo) {
         this.entityMarkRepo = entityMarkRepo;
         this.relationMarkRepo = relationMarkRepo;
         this.verStateRepo = verStateRepo;
         this.relaReflectRepo = relaReflectRepo;
         this.userRepo = userRepo;
         this.markOpinionRepo = markOpinionRepo;
+        this.entiReflectRepo = entiReflectRepo;
     }
 
     @Transactional
@@ -239,5 +243,13 @@ public class VerService {
             opinions = markOpinions.stream().map(MarkOpinion::getOpinion).collect(Collectors.toList());
         }
         return opinions;
+    }
+
+    @Transactional
+    public EntityReflectVo getEntityReflect(){
+        List<EntityReflect> entityReflectList = this.entiReflectRepo.findAll();
+        EntityReflectVo result = new EntityReflectVo();
+        result.addEntities(entityReflectList);
+        return result;
     }
 }

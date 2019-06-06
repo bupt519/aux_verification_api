@@ -16,11 +16,14 @@ public class VerifyStatement {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "pdf_path", columnDefinition = "text")
+    @Column(name = "pdf_path", columnDefinition = "varchar(255)")
     private String pdfUrl;
 
     @Column(name = "pdf_no")
     private int pdfNo;
+
+    @Column(name = "mark_id")
+    private int mark_id;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

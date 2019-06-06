@@ -64,11 +64,11 @@ public class VerService {
         record.setVerDate(new Date());
         record.setContent(content);
         record.setDescription(description);
-        if (content.equals(record.getOriginContent())) {
-            if (passed == 0) record.setVerifyResult(VerifyResult.DENIED.ordinal());
-            else record.setVerifyResult(VerifyResult.MODIFY_DENIED.ordinal());
-        } else {
-            if (passed == 0) record.setVerifyResult(VerifyResult.ACCEPT.ordinal());
+        if (content.equals(record.getOriginContent())) { //没有发生修改
+            if (passed == 0) record.setVerifyResult(VerifyResult.DENIED.ordinal()); //没有通过- 拒绝
+            else record.setVerifyResult(VerifyResult.ACCEPT.ordinal()); // 通过 - 直接通过
+        } else {  //发生了修改
+            if (passed == 0) record.setVerifyResult(VerifyResult.MODIFY_DENIED.ordinal());
             else record.setVerifyResult(VerifyResult.MODIFY_ACCEPT.ordinal());
         }
         entityMarkRepo.save(record);
@@ -108,11 +108,11 @@ public class VerService {
         record.setVerDate(new Date());
         record.setDescription(description);
         record.setReflect(refOptional.get());
-        if (content.equals(record.getOriginContent())) {
-            if (passed == 0) record.setVerifyResult(VerifyResult.DENIED.ordinal());
-            else record.setVerifyResult(VerifyResult.MODIFY_DENIED.ordinal());
-        } else {
-            if (passed == 0) record.setVerifyResult(VerifyResult.ACCEPT.ordinal());
+        if (content.equals(record.getOriginContent())) { //没有发生修改
+            if (passed == 0) record.setVerifyResult(VerifyResult.DENIED.ordinal()); //没有通过- 拒绝
+            else record.setVerifyResult(VerifyResult.ACCEPT.ordinal()); // 通过 - 直接通过
+        } else {  //发生了修改
+            if (passed == 0) record.setVerifyResult(VerifyResult.MODIFY_DENIED.ordinal());
             else record.setVerifyResult(VerifyResult.MODIFY_ACCEPT.ordinal());
         }
         relationMarkRepo.save(record);
@@ -195,11 +195,11 @@ public class VerService {
     public boolean beginNext(Long id, boolean completeLast) {
         Optional<VerifyStatement> statementOptional = Optional.empty();
         Optional<User> userOptional = userRepo.findById(id);
-        if (userOptional.isPresent()) {
+        if (userOptional.isPresent()) {  // 试图找到已经分配给这个用户的数据
             statementOptional = verStateRepo.findByVerUserAndState(userOptional.get(), VerifyStatement.State.STARTED.ordinal());
         }
-        if (statementOptional.isPresent()) {
-            if (completeLast) {
+        if (statementOptional.isPresent()) { // 存在这个已经分配过的数据
+            if (completeLast) { // 标志已经完成这一条
                 VerifyStatement statement = statementOptional.get();
                 statement.setState(VerifyStatement.State.END.ordinal());
                 verStateRepo.save(statement);
@@ -207,6 +207,8 @@ public class VerService {
                 return true;
             }
         }
+
+        //分配一条新的数据
         statementOptional = verStateRepo.findFirstByState(VerifyStatement.State.UNSTARTED.ordinal());
         if (statementOptional.isPresent()) {
             VerifyStatement statement = statementOptional.get();

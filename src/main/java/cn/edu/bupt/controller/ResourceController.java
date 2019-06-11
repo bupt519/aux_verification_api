@@ -13,9 +13,9 @@ import java.util.Date;
 @RequestMapping("resources")
 @Slf4j
 public class ResourceController {
-    @GetMapping("pdf/{pdfName}")
+    //@GetMapping("pdf/{pdfName}")
     public ResponseEntity<FileSystemResource> getPdf(@PathVariable String pdfName){
-
+        //已放弃，这部分内容改为由前端来完成
         HttpHeaders headers = new HttpHeaders();
 
         headers.add("Cache-Control", "max-age=0");

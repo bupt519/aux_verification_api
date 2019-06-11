@@ -53,7 +53,7 @@ public class UserService {
             encryptedPsd = user.getPassword();
         }
         user.setPassword(encryptedPsd);
-        user.setName("天野远子");
+        user.setName("数据审核员");
         user.setAvatar("/avatar.2.jpg");
         user.setRole("admin");
         user = userRepo.save(user);

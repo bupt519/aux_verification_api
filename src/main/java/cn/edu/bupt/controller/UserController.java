@@ -31,6 +31,7 @@ public class UserController {
     @PostMapping("entities")
     public ResponseResult<EntityListVo> reviewedEntities(@RequestBody Map<String, Object> params,
                                                          HttpSession httpSession) {
+        /*获取所有由当前用户审核过（中）的实体标注数据*/
         Identity identity = (Identity) httpSession.getAttribute(OauthConsts.KEY_IDENTITY);
 //        boolean passed = (boolean) params.get("passed");
         int pageNo = (int) params.get(ParamConsts.pageNo);
@@ -43,6 +44,7 @@ public class UserController {
     @PostMapping("relations")
     public ResponseResult<RelationListVo> reviewedRelations(@RequestBody Map<String, Object> params,
                                                             HttpSession session) {
+        /*获取所有由当前用户审核过（中）的关系标注数据*/
         Identity identity = (Identity) session.getAttribute(OauthConsts.KEY_IDENTITY);
 //        boolean passed = (boolean) params.get("passed");
         int pageNo = (int) params.get(ParamConsts.pageNo);
@@ -63,4 +65,8 @@ public class UserController {
         return ResponseEntity.ok(ResponseResult.of("success", new UserInfoVo(user)));
     }
 
+    @PostMapping("info/update")
+    public ResponseEntity<ResponseResult<String>> updateUserInfo(){
+
+    }
 }

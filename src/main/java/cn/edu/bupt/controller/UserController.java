@@ -4,6 +4,7 @@ import cn.edu.bupt.bean.po.User;
 import cn.edu.bupt.bean.vo.EntityListVo;
 import cn.edu.bupt.bean.vo.RelationListVo;
 import cn.edu.bupt.bean.vo.UserInfoVo;
+import cn.edu.bupt.bean.jo.UserInfoUpdateParam;
 import cn.edu.bupt.constant.OauthConsts;
 import cn.edu.bupt.constant.ParamConsts;
 import cn.edu.bupt.service.UserService;
@@ -33,10 +34,8 @@ public class UserController {
                                                          HttpSession httpSession) {
         /*获取所有由当前用户审核过（中）的实体标注数据*/
         Identity identity = (Identity) httpSession.getAttribute(OauthConsts.KEY_IDENTITY);
-//        boolean passed = (boolean) params.get("passed");
         int pageNo = (int) params.get(ParamConsts.pageNo);
         int pageSize = (int) params.get(ParamConsts.pageSize);
-//        int interPassed = passed ? 1 : 0;
         EntityListVo marks = userService.listEntities(identity.getId() /*interPassed*/, pageNo, pageSize);
         return ResponseResult.of("success", marks);
     }
@@ -66,7 +65,12 @@ public class UserController {
     }
 
     @PostMapping("info/update")
-    public ResponseEntity<ResponseResult<String>> updateUserInfo(){
-
+    public ResponseEntity<ResponseResult<String>> updateUserInfo(@RequestBody UserInfoUpdateParam param, HttpSession session){
+        Identity identity = (Identity) session.getAttribute(OauthConsts.KEY_IDENTITY);
+        User user = userService.getUser(identity.getClientId());
+        if (!userService.updateUser(user, param)){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseResult.of("更新失败"));
+        }
+        return ResponseEntity.ok(ResponseResult.of("更新失败"));
     }
 }

@@ -3,6 +3,7 @@ package cn.edu.bupt.service;
 import cn.edu.bupt.bean.po.*;
 import cn.edu.bupt.bean.vo.EntityListVo;
 import cn.edu.bupt.bean.vo.RelationListVo;
+import cn.edu.bupt.bean.jo.UserInfoUpdateParam;
 import cn.edu.bupt.repository.*;
 import cn.edu.bupt.util.Md5Util;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.beans.Transient;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +60,18 @@ public class UserService {
         user.setRole("admin");
         user = userRepo.save(user);
         return user;
+    }
+
+    @Transactional
+    public boolean updateUser(User user, UserInfoUpdateParam updateInfo){
+        String newName = updateInfo.getName();
+        user.setName(newName);
+        try {
+            userRepo.save(user);
+            return true;
+        }catch (Exception e){
+            return false;
+        }
     }
 
     @Transactional

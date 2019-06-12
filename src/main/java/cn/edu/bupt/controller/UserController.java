@@ -17,9 +17,11 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("api/user")
+@Slf4j
 public class UserController {
 
     private final UserService userService;

@@ -34,6 +34,7 @@ public class VerifyController {
 
     @PutMapping("entity")
     public ResponseEntity<ResponseResult<String>> dealEntity(@RequestBody EntityParam param, HttpSession session) {
+        log.info("-------------Post entity ------------------------------");
         Identity identity = (Identity) session.getAttribute(OauthConsts.KEY_IDENTITY);
         if (StringUtils.isEmpty(param.getContent()) || param.getId() <= 0L) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -47,6 +48,7 @@ public class VerifyController {
 
     @PutMapping("relation")
     public ResponseEntity<ResponseResult<String>> dealRelation(@RequestBody RelationParam param, HttpSession session) {
+        log.info("-------------Post relation ------------------------------");
         Identity identity = (Identity) session.getAttribute(OauthConsts.KEY_IDENTITY);
         if (StringUtils.isEmpty(param.getContent()) || param.getId() <= 0L || param.getRelationId() <= 0L) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -60,6 +62,7 @@ public class VerifyController {
 
     @PostMapping("next")
     public ResponseEntity<ResponseResult<VerMarksVo>> nextVerData(@RequestBody Map<String, Object> params, HttpSession session) {
+        log.info("-------------Post next------------------------------");
         Identity identity = (Identity) session.getAttribute(OauthConsts.KEY_IDENTITY);
         int pageNo = 1, pageSize = 100;
         if (params.containsKey(ParamConsts.pageNo)) {
@@ -80,6 +83,7 @@ public class VerifyController {
 
     @PostMapping("next/begin")
     public ResponseEntity<ResponseResult<String>> startNext(@RequestBody Map<String, Object> params, HttpSession session) {
+        log.info("-------------Post next/begin ------------------------------");
         Identity identity = (Identity) session.getAttribute(OauthConsts.KEY_IDENTITY);
         boolean completeLast = (boolean) params.get("completeLast");
         boolean result = verService.beginNext(identity.getId(), completeLast);

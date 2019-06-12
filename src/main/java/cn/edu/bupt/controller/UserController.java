@@ -32,6 +32,7 @@ public class UserController {
     @PostMapping("entities")
     public ResponseResult<EntityListVo> reviewedEntities(@RequestBody Map<String, Object> params,
                                                          HttpSession httpSession) {
+        log.info("-------------Post entities ------------------------------");
         /*获取所有由当前用户审核过（中）的实体标注数据*/
         Identity identity = (Identity) httpSession.getAttribute(OauthConsts.KEY_IDENTITY);
         int pageNo = (int) params.get(ParamConsts.pageNo);
@@ -43,6 +44,7 @@ public class UserController {
     @PostMapping("relations")
     public ResponseResult<RelationListVo> reviewedRelations(@RequestBody Map<String, Object> params,
                                                             HttpSession session) {
+        log.info("-------------Post relations ------------------------------");
         /*获取所有由当前用户审核过（中）的关系标注数据*/
         Identity identity = (Identity) session.getAttribute(OauthConsts.KEY_IDENTITY);
 //        boolean passed = (boolean) params.get("passed");
@@ -55,6 +57,7 @@ public class UserController {
 
     @GetMapping("info")
     public ResponseEntity<ResponseResult<UserInfoVo>> getUserInfo(HttpSession session) {
+        log.info("-------------Post info/ ------------------------------");
         Identity identity = (Identity) session.getAttribute(OauthConsts.KEY_IDENTITY);
         User user = userService.getUser(identity.getClientId());
         if (user == null) {
@@ -66,11 +69,12 @@ public class UserController {
 
     @PostMapping("info/update")
     public ResponseEntity<ResponseResult<String>> updateUserInfo(@RequestBody UserInfoUpdateParam param, HttpSession session){
+        log.info("-------------Post info/update ------------------------------");
         Identity identity = (Identity) session.getAttribute(OauthConsts.KEY_IDENTITY);
         User user = userService.getUser(identity.getClientId());
         if (!userService.updateUser(user, param)){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseResult.of("更新失败"));
         }
-        return ResponseEntity.ok(ResponseResult.of("更新失败"));
+        return ResponseEntity.ok(ResponseResult.of("更新成功"));
     }
 }

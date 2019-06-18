@@ -48,6 +48,8 @@ public class RelationMark {
     @JsonIgnoreProperties("marks")
     private RelationReflect reflect;
 
+    public RelationMark(){ }
+
     public RelationMark(String content, int passed, String description,RelationReflect refOptional, VerifyStatement recordStmt){
         this.setOriginContent(content);
         this.setContent(content);

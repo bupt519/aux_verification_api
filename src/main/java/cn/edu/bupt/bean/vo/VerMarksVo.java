@@ -41,7 +41,7 @@ public class VerMarksVo {
         private long relationId;
         private String relationName;
         private List<Reflect> reflects;
-        private long stateId;
+        private long statId;
         private int type;
         private String description;
     }
@@ -62,7 +62,7 @@ public class VerMarksVo {
             vo.setReviewed(originMark.getReviewed());
             vo.setVerDate(originMark.getVerDate());
             vo.setType(0);
-            vo.setStateId(originMark.getStatement().getId());
+            vo.setStatId(originMark.getStatement().getId());
             vo.setDescription(originMark.getDescription());
             data.add(vo);
         }
@@ -80,7 +80,7 @@ public class VerMarksVo {
             vo.setRelationName(originMark.getReflect().getRName());
             vo.setReflects(reflects);
             vo.setType(1);
-            vo.setStateId(originMark.getStatement().getId());
+            vo.setStatId(originMark.getStatement().getId());
             vo.setDescription(originMark.getDescription());
             data.add(vo);
         }

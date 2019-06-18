@@ -41,4 +41,14 @@ public class EntityMark {
     @JoinColumn(name = "stat_id")
     @JsonIgnoreProperties("entityMarks")
     private VerifyStatement statement;
+
+    public void updateVerifyResult(){
+        if (this.content.equals(this.getOriginContent())) { //没有发生修改
+            if (this.passed == 0) this.setVerifyResult(VerifyResult.DENIED.ordinal()); //没有通过- 拒绝
+            else this.setVerifyResult(VerifyResult.ACCEPT.ordinal()); // 通过 - 直接通过
+        } else {  //发生了修改
+            if (this.passed == 0) this.setVerifyResult(VerifyResult.MODIFY_DENIED.ordinal());
+            else this.setVerifyResult(VerifyResult.MODIFY_ACCEPT.ordinal());
+        }
+    }
 }

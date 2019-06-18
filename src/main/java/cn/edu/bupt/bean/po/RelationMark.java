@@ -5,6 +5,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.Optional;
 
 @Entity
 @Table(name = "relation_mark")
@@ -46,4 +47,26 @@ public class RelationMark {
     @JoinColumn(name = "relation_id")
     @JsonIgnoreProperties("marks")
     private RelationReflect reflect;
+
+    public RelationMark(String content, int passed, String description,RelationReflect refOptional, VerifyStatement recordStmt){
+        this.setOriginContent(content);
+        this.setContent(content);
+        this.setPassed(passed);
+        this.setVerDate(new Date());
+        this.setDescription(description);
+        this.setReflect(refOptional);
+        this.updateVerifyResult();
+        this.setStatement(recordStmt);
+        this.setReviewed(1);
+    }
+
+    public void updateVerifyResult(){
+        if (this.content.equals(this.getOriginContent())) { //没有发生修改
+            if (this.passed == 0) this.setVerifyResult(VerifyResult.DENIED.ordinal()); //没有通过- 拒绝
+            else this.setVerifyResult(VerifyResult.ACCEPT.ordinal()); // 通过 - 直接通过
+        } else {  //发生了修改
+            if (this.passed == 0) this.setVerifyResult(VerifyResult.MODIFY_DENIED.ordinal());
+            else this.setVerifyResult(VerifyResult.MODIFY_ACCEPT.ordinal());
+        }
+    }
 }

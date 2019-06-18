@@ -64,13 +64,7 @@ public class VerService {
         record.setVerDate(new Date());
         record.setContent(content);
         record.setDescription(description);
-        if (content.equals(record.getOriginContent())) { //没有发生修改
-            if (passed == 0) record.setVerifyResult(VerifyResult.DENIED.ordinal()); //没有通过- 拒绝
-            else record.setVerifyResult(VerifyResult.ACCEPT.ordinal()); // 通过 - 直接通过
-        } else {  //发生了修改
-            if (passed == 0) record.setVerifyResult(VerifyResult.MODIFY_DENIED.ordinal());
-            else record.setVerifyResult(VerifyResult.MODIFY_ACCEPT.ordinal());
-        }
+        record.updateVerifyResult();
         entityMarkRepo.save(record);
         // 如果该段落所有文本全部审核完毕，更新段落表的状态
 //        if (relationMarkRepo.countByPassedAndStatement(-1, record.getStatement()) == 0 &&
@@ -87,7 +81,7 @@ public class VerService {
                                                    int passed, long relationId, String description) {
         RelationMark record = getRelationMark(relationMarkId);
         if (record == null) { // 审批文本不存在
-            return ResponseResult.of("审批失败", null);
+            return ResponseResult.of("审批失败", "审批文本不存在");
         }
         // 所属段落没有分配审批人或分配的审批人和用户id不相等
         if (record.getStatement() == null || record.getStatement().getVerUser() == null ||
@@ -108,13 +102,7 @@ public class VerService {
         record.setVerDate(new Date());
         record.setDescription(description);
         record.setReflect(refOptional.get());
-        if (content.equals(record.getOriginContent())) { //没有发生修改
-            if (passed == 0) record.setVerifyResult(VerifyResult.DENIED.ordinal()); //没有通过- 拒绝
-            else record.setVerifyResult(VerifyResult.ACCEPT.ordinal()); // 通过 - 直接通过
-        } else {  //发生了修改
-            if (passed == 0) record.setVerifyResult(VerifyResult.MODIFY_DENIED.ordinal());
-            else record.setVerifyResult(VerifyResult.MODIFY_ACCEPT.ordinal());
-        }
+        record.updateVerifyResult();
         relationMarkRepo.save(record);
         // 如果该段落所有文本全部审核完毕，更新段落表的状态
 //        if (relationMarkRepo.countByPassedAndStatement(-1, record.getStatement()) == 0 &&
@@ -124,6 +112,27 @@ public class VerService {
 //            verStateRepo.save(statement);
 //        }
         return ResponseResult.of("审批成功", null);
+    }
+
+    @Transactional
+    public ResponseResult<String> addNewRelation(long userId, long relationMarkId, long statId, String content,
+                                                   int passed, long relationId, String description) {
+        VerifyStatement recordStmt = getStatement(statId);
+        // 所属段落没有分配审批人或分配的审批人和用户id不相等
+        if (recordStmt == null || recordStmt.getVerUser() == null ||
+                userId != recordStmt.getVerUser().getId()) {
+            return ResponseResult.of("审批失败", "所属段落没有分配审批人或分配的审批人和用户id不相等");
+        }
+        Optional<RelationReflect> refOptional = relaReflectRepo.findById(relationId);
+        // 提交的关系id不存在
+        if (!refOptional.isPresent()) {
+            return ResponseResult.of("审批失败", "提交的关系id不存在");
+        }
+
+        RelationMark record = new RelationMark(content, passed, description, refOptional.get(), recordStmt);
+
+        relationMarkRepo.save(record);
+        return ResponseResult.of("关系添加成功", null);
     }
 
     @Transactional
@@ -188,6 +197,12 @@ public class VerService {
     @Transactional
     public RelationMark getRelationMark(long relationMarkId) {
         Optional<RelationMark> recordOptional = relationMarkRepo.findById(relationMarkId);
+        return recordOptional.orElse(null);
+    }
+
+    @Transactional
+    public VerifyStatement getStatement(long statementId) {
+        Optional<VerifyStatement> recordOptional = verStateRepo.findById(statementId);
         return recordOptional.orElse(null);
     }
 

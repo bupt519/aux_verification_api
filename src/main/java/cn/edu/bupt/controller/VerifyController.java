@@ -34,7 +34,7 @@ public class VerifyController {
 
     @PutMapping("entity")
     public ResponseEntity<ResponseResult<String>> dealEntity(@RequestBody EntityParam param, HttpSession session) {
-        log.info("-------------Post entity ------------------------------");
+        log.info("-------------Put entity ------------------------------");
         Identity identity = (Identity) session.getAttribute(OauthConsts.KEY_IDENTITY);
         if (StringUtils.isEmpty(param.getContent()) || param.getId() <= 0L) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -46,9 +46,9 @@ public class VerifyController {
         return ResponseEntity.ok(result);
     }
 
-    @PutMapping("relation")
+    @PutMapping("relation")  // 更新一个已有的关系数据
     public ResponseEntity<ResponseResult<String>> dealRelation(@RequestBody RelationParam param, HttpSession session) {
-        log.info("-------------Post relation ------------------------------");
+        log.info("-------------Put relation ------------------------------");
         Identity identity = (Identity) session.getAttribute(OauthConsts.KEY_IDENTITY);
         if (StringUtils.isEmpty(param.getContent()) || param.getId() <= 0L || param.getRelationId() <= 0L) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -56,6 +56,19 @@ public class VerifyController {
 //            return ResponseResult.error(ResultTypeEnum.PARAM_ERROR, "审批失败", null);
         }
         ResponseResult<String> result = verService.dealWithRelation(identity.getId(), param.getId(), param.getStatId(),
+                param.getContent(), param.getPassed(), param.getRelationId(), param.getDescription());
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("relation")  // 对已有的文本增加一个新的关系数据
+    public ResponseEntity<ResponseResult<String>> addRelation(@RequestBody RelationParam param, HttpSession session) {
+        log.info("-------------Post relation ------------------------------");
+        Identity identity = (Identity) session.getAttribute(OauthConsts.KEY_IDENTITY);
+        if (StringUtils.isEmpty(param.getContent()) || param.getRelationId() <= 0L) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ResponseResult.of("关系添加失败", "文本内容为空或未选择关系"));
+        }
+        ResponseResult<String> result = verService.addNewRelation(identity.getId(), param.getId(), param.getStatId(),
                 param.getContent(), param.getPassed(), param.getRelationId(), param.getDescription());
         return ResponseEntity.ok(result);
     }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "statement_entities")   //  单个句子的实体词典，包括实体编号（全局），实体编号（单句）和实体在这句话的开头位置和结尾位置
@@ -30,4 +31,12 @@ public class StmtEntities {
     @JoinColumn(name = "stat_id")
     @JsonIgnoreProperties("entities")
     private VerifyStatement statement;
+
+    @OneToMany(mappedBy = "stmtEntity1", cascade = CascadeType.DETACH, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("stmtEntity1")
+    private List<RelationMark> marks_e1;
+
+    @OneToMany(mappedBy = "stmtEntity2", cascade = CascadeType.DETACH, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("stmtEntity2")
+    private List<RelationMark> marks_e2;
 }

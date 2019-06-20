@@ -44,6 +44,10 @@ public class VerifyStatement {
     @JsonIgnoreProperties("statement")
     private List<RelationMark> relationMarks;
 
+    @OneToMany(mappedBy = "statement", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("statement")
+    private List<StmtEntities> entities;
+
     public enum State{
         UNSTARTED,
         STARTED,

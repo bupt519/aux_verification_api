@@ -1,10 +1,14 @@
 package cn.edu.bupt.bean.po;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import javafx.util.Pair;
 import lombok.Data;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Entity
 @Table(name = "entity_mark")
@@ -50,5 +54,64 @@ public class EntityMark {
             if (this.passed == 0) this.setVerifyResult(VerifyResult.MODIFY_DENIED.ordinal());
             else this.setVerifyResult(VerifyResult.MODIFY_ACCEPT.ordinal());
         }
+    }
+
+    private static String tagPatternTailStr = "</[on][a-z]?>";
+    private static Pattern tagPatternTail = Pattern.compile(tagPatternTailStr);
+    private static String otherTagHead = "<o>";
+    private static String otherTagTail = "</o>";
+    private static String tagPatternHeadStr = "<[on][a-z]?>";
+    private static Pattern tagPatternHead = Pattern.compile(tagPatternHeadStr);
+    public String getNonTagContent(){
+        // 将所有的标签匹配去除掉
+        Matcher matcher = tagPatternTail.matcher(this.content);
+        return matcher.replaceAll("");
+    }
+
+    public String getFullTagContent(){
+        // 对只有结束标签的字符串做补全
+        Matcher matcher = tagPatternTail.matcher(this.content);
+        Stack<Pair<Integer, String>> tailStack = new Stack<>();
+        int end = 0; //最初的end是句子的首部
+        while(matcher.find()){
+            int start = matcher.start();
+            String tag = this.content.substring(start, matcher.end());
+            tailStack.push(new Pair<>(end, tag.replace("/","")));
+            end = matcher.end();
+        }
+
+        String fullTagContent = new String("");
+        end = this.content.length(); // 实际上若数据正确的话，上一个循环结束后end就应该在句子末尾
+        while(!tailStack.empty()){
+            Pair<Integer, String> tagUnit = tailStack.pop();
+            int loc = tagUnit.getKey();
+            String tag = tagUnit.getValue();
+            if(tag.equals(otherTagHead))
+                tag = "";
+            String previous = this.content.substring(loc, end);
+            fullTagContent = tag.concat(previous).concat(fullTagContent);
+            end = loc;
+        }
+        return fullTagContent.replace(otherTagTail, "");
+    }
+
+    public String recoverTagContent(String content){
+        // 将前端返回的字符串还原回实体标注格式
+        //把每个<n*> 改成</o> , 若结尾不是</n*>则加上</o>
+        Matcher matcher = tagPatternHead.matcher(content);
+        String tagContent = matcher.replaceAll(otherTagTail);
+        String tagPattern = "</n[a-z]>$";
+        boolean hasTail = tagPattern.matches(tagContent);
+        Pattern pattern = Pattern.compile(tagPattern);
+        matcher = pattern.matcher(tagContent);
+        if(!matcher.find())
+            tagContent = tagContent.concat(otherTagTail); //补上结尾的</o>
+
+        tagPattern = "^" + otherTagTail;
+        boolean hasHead = tagPattern.matches(tagContent);
+        if(hasHead)
+            tagContent = tagContent.substring(3); // 去除首部的<o>
+
+        return tagContent.replace("></o>",">"); // 最后消除紧跟在别的实体后面的的</o>
     }
 }

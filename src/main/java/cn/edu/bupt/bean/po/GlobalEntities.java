@@ -7,7 +7,7 @@ import javax.persistence.*;
 import java.util.List;
 
 @Entity
-@Table(name = "entity_dict")   //  全局的实体词典，包括实体内容，实体编号（全局）和实体计数（同一个句子里标注多次则记多次)
+@Table(name = "global_entities")   //  全局的实体词典，包括实体内容，实体编号（全局）和实体计数（同一个句子里标注多次则记多次)
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler", "fieldHandler"})
 @Data
 public class GlobalEntities {

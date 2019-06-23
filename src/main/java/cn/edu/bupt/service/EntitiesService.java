@@ -5,6 +5,7 @@ import cn.edu.bupt.bean.vo.EntityReflectVo;
 import cn.edu.bupt.bean.vo.VerMarksVo;
 import cn.edu.bupt.repository.*;
 import cn.edu.bupt.util.ResponseResult;
+import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,9 @@ public class EntitiesService {
 
     private final VerStateRepo verStateRepo;
 
-    private final RelaReflectRepo relaReflectRepo;
+    private final GlobalEntitiesRepo globalEntitiesRepo;
+
+    private final StmtEntitiesRepo stmtEntitiesRepo;
 
     private final UserRepo userRepo;
 
@@ -36,14 +39,15 @@ public class EntitiesService {
 
     @Autowired
     public EntitiesService(EntityMarkRepo entityMarkRepo, RelationMarkRepo relationMarkRepo, VerStateRepo verStateRepo,
-                           RelaReflectRepo relaReflectRepo, UserRepo userRepo, MarkOpinionRepo markOpinionRepo, EntiReflectRepo entiReflectRepo) {
+                           StmtEntitiesRepo stmtEntitiesRepo, UserRepo userRepo, MarkOpinionRepo markOpinionRepo, EntiReflectRepo entiReflectRepo,GlobalEntitiesRepo globalEntitiesRepo) {
         this.entityMarkRepo = entityMarkRepo;
         this.relationMarkRepo = relationMarkRepo;
         this.verStateRepo = verStateRepo;
-        this.relaReflectRepo = relaReflectRepo;
+        this.stmtEntitiesRepo = stmtEntitiesRepo;
         this.userRepo = userRepo;
         this.markOpinionRepo = markOpinionRepo;
         this.entiReflectRepo = entiReflectRepo;
+        this.globalEntitiesRepo = globalEntitiesRepo;
     }
 
     @Transactional
@@ -51,20 +55,25 @@ public class EntitiesService {
                                                  String description) {
         EntityMark record = getEntity(entityId);
         if (record == null)  // 审批文本不存在
-            return ResponseResult.of("审批失败", null);
+            return ResponseResult.of("审批失败", "审批文本不存在");
         // 提交的内容还没有分配审批人或系统记录的审批人id和用户id不相等
         if (record.getStatement() == null || record.getStatement().getVerUser() == null
                 || record.getStatement().getVerUser().getId() != userId) {
-            return ResponseResult.of("审批失败", null);
+            return ResponseResult.of("审批失败", "提交的内容还没有分配审批人或系统记录的审批人和用户不一致");
         }
-        // 审批文本所属段落的id和用户提交的段落id不相等
-        if (record.getStatement().getId() != statId)
-            return ResponseResult.of("审批失败", null);
+
         record.setPassed(passed);
         record.setVerDate(new Date());
         record.setContent(content);
         record.setDescription(description);
-        record.updateVerifyResult();
+        boolean hasChange = record.updateVerifyResult();
+        if(hasChange){
+            /*  通过且发生了修改，需要获取并处理所有的修改,步骤为：
+                1、根据entity的statid取出所有的stmtEntities
+                2、写一个函数，输入修改前后的文本，得出若干对(start,end), 用来查对应的stmtEntities
+                3、比对(start,end), 若存在差异但有交集，则确定是变更后的，替换
+             */
+        }
         entityMarkRepo.save(record);
         // 如果该段落所有文本全部审核完毕，更新段落表的状态
 //        if (relationMarkRepo.countByPassedAndStatement(-1, record.getStatement()) == 0 &&
@@ -76,116 +85,88 @@ public class EntitiesService {
         return ResponseResult.of("审批成功", null);
     }
 
-    @Transactional
-    public ResponseResult<String> dealWithRelation(long userId, long relationMarkId, long statId, String content,
-                                                   int passed, long relationId, String description) {
-        RelationMark record = getRelationMark(relationMarkId);
-        if (record == null) { // 审批文本不存在
-            return ResponseResult.of("审批失败", "审批文本不存在");
+    public List<StmtEntities> dealWithEntitiesModify(EntityMark record){
+        List<Pair<Integer, Integer>> curEntitiesLoc = EntityMark.getEntitiesLoc(record.getContent());
+        VerifyStatement statement = record.getStatement();
+        List<StmtEntities> originalEntities = this.stmtEntitiesRepo.findAllByStatementOrderByHead(statement); // 取出句子原来的所有entities
+        List<StmtEntities> curEntities = StmtEntities.list2Entities(curEntitiesLoc, statement);
+        List<StmtEntities> resEntities = new ArrayList<>();  // 最终的所有实体（先放修改前后都没改变的实体）
+        List<StmtEntities> updateEntities = new ArrayList<>(); // 实际发生了更新的实体
+        for(StmtEntities originalEntity: originalEntities){
+            for(StmtEntities curEntity: curEntities){
+
+                if(originalEntity.isIntersect(curEntity)){ // 原实体与某个现实体有交集，视作这个原实体的变化
+                    if(!originalEntity.isEqual(curEntity))
+                        originalEntity.updateSE(curEntity);
+                    updateEntities.add(originalEntity);
+                    curEntities.remove(curEntity);
+                    break;
+                }
+            }
         }
-        // 所属段落没有分配审批人或分配的审批人和用户id不相等
-        if (record.getStatement() == null || record.getStatement().getVerUser() == null ||
-                userId != record.getStatement().getVerUser().getId()) {
-            return ResponseResult.of("审批失败", null);
+
+        updateEntities.addAll(curEntities);
+        String nonTagContent = record.getNonTagContent();
+        for(StmtEntities updateEntity: updateEntities){ // 处理发生了修改的实体及新实体
+            this.updateGlobalEntity(updateEntity, nonTagContent);
+            resEntities.add(updateEntity); // 更新后的实体合并到最终的实体结果里
         }
-        // 提交的段落id和文本所属段落的id不相等
-        if (record.getStatement().getId() != statId) {
-            return ResponseResult.of("审批失败", null);
+
+        originalEntities.removeAll(resEntities); // 没有再被覆盖到的将被删除
+        for(StmtEntities removeEntity: originalEntities){
+            //需要更新stmtEntities附着的关系记录（删除时会使他变Null）
+            this.deleteOriginEntities(removeEntity);
         }
-        Optional<RelationReflect> refOptional = relaReflectRepo.findById(relationId);
-        // 提交的关系id不存在
-        if (!refOptional.isPresent()) {
-            return ResponseResult.of("审批失败", null);
-        }
-        record.setContent(content);
-        record.setPassed(passed);
-        record.setVerDate(new Date());
-        record.setDescription(description);
-        record.setReflect(refOptional.get());
-        record.updateVerifyResult();
-        relationMarkRepo.save(record);
-        // 如果该段落所有文本全部审核完毕，更新段落表的状态
-//        if (relationMarkRepo.countByPassedAndStatement(-1, record.getStatement()) == 0 &&
-//                entityMarkRepo.countByPassedAndStatement(-1, record.getStatement()) == 0) {
-//            VerifyStatement statement = record.getStatement();
-//            statement.setState(2);
-//            verStateRepo.save(statement);
-//        }
-        return ResponseResult.of("审批成功", null);
+
+        this.deleteGlobalEntitiesByCountEqualsZERO();
+        return resEntities;
     }
 
     @Transactional
-    public ResponseResult<String> addNewRelation(long userId, long relationMarkId, long statId, String content,
-                                                   int passed, long relationId, String description) {
-        VerifyStatement recordStmt = getStatement(statId);
-        // 所属段落没有分配审批人或分配的审批人和用户id不相等
-        if (recordStmt == null || recordStmt.getVerUser() == null ||
-                userId != recordStmt.getVerUser().getId()) {
-            return ResponseResult.of("审批失败", "所属段落没有分配审批人或分配的审批人和用户id不相等");
-        }
-        Optional<RelationReflect> refOptional = relaReflectRepo.findById(relationId);
-        // 提交的关系id不存在
-        if (!refOptional.isPresent()) {
-            return ResponseResult.of("审批失败", "提交的关系id不存在");
+    public void updateGlobalEntity(StmtEntities modified_record, String nonTagContent){
+        //修改StmtEntities原本对应的实体的计数值（若存在） 并对修改后的实体加上计数值
+        GlobalEntities origiGlobalEntity = modified_record.getGlobalEntity();
+        if(origiGlobalEntity != null){
+            origiGlobalEntity = this.globalEntitiesRepo.findById(origiGlobalEntity.getId()); // 因为同一句里可能有重复的实体，重新取出它的当前值
+            boolean gEntityHasOther = origiGlobalEntity.updateCount(-1);
+            this.globalEntitiesRepo.save(origiGlobalEntity);
         }
 
-        RelationMark record = new RelationMark(content, passed, description, refOptional.get(), recordStmt);
-
-        relationMarkRepo.save(record);
-        return ResponseResult.of("关系添加成功", null);
+        // 新实体
+        String entityName = nonTagContent.substring(modified_record.getHead(), modified_record.getTail());
+        GlobalEntities newGlobalEntity = this.globalEntitiesRepo.findByEntityName(entityName);
+        if(newGlobalEntity != null){
+            newGlobalEntity.updateCount(1);
+            this.globalEntitiesRepo.save(newGlobalEntity);
+        }else{
+            newGlobalEntity = new GlobalEntities(entityName);
+        }
+        modified_record.setGlobalEntity(newGlobalEntity);
+        this.stmtEntitiesRepo.save(modified_record);
     }
 
     @Transactional
-    public VerMarksVo curUnViewedStatement(long userId, int pageNo, int pageSize) {
-        Optional<VerifyStatement> statementOptional = Optional.empty();
-        Optional<User> user = userRepo.findById(userId);
-        if (user.isPresent()) { // 如果用户在上次审批时，没有将该段落的所有文本全部审核完毕
-            statementOptional = verStateRepo.findByVerUserAndState(user.get(), VerifyStatement.State.STARTED.ordinal());
+    void deleteOriginEntities(StmtEntities toRemoveRecord){ // 删除没有适配对象的旧实体，并清除指向它们的关系数据中的相应字段
+        List<RelationMark> markWithE1 = toRemoveRecord.getMarks_e1();
+        for(RelationMark relation: markWithE1){
+            relation.setStmtEntity1(null);
+            this.relationMarkRepo.save(relation);
         }
-//        if (!statementOptional.isPresent()) { // 查找第一条待审核的段落
-//            statementOptional = verStateRepo.findFirstByState(0);
-//        }
-        if (statementOptional.isPresent()) {
-            VerifyStatement statement = statementOptional.get();
-//            // 分配审核人
-//            statement.setVerUser(userRepo.getOne(userId));
-//            // 设置段落审核状态(开始审核但未全部审核完毕)
-//            statement.setState(1);
-//            verStateRepo.save(statement);
-//
-//            // 更新审批文本状态
-//            for (int i = 0, size = statement.getEntityMarks().size(); i < size; ++i) {
-//                EntityMark mark = statement.getEntityMarks().get(i);
-//                // 文本更新为已审核状态
-//                mark.setReviewed(1);
-//                entityMarkRepo.save(mark);
-//            }
-//            for (int i = 0, size = statement.getRelationMarks().size(); i < size; ++i) {
-//                RelationMark mark = statement.getRelationMarks().get(i);
-//                // 文本更新为已审核状态
-//                mark.setReviewed(1);
-//                relationMarkRepo.save(mark);
-//            }
-            VerMarksVo result = new VerMarksVo();
-            result.setId(statement.getId());
-            result.setPdfUrl(statement.getPdfUrl());
-            result.setPdfNo(statement.getPdfNo());
-            List<VerMarksVo.Reflect> reflects = new ArrayList<>();
-            List<RelationReflect> originReflects = relaReflectRepo.findAll();
-            for (RelationReflect originReflect : originReflects) {
-                reflects.add(new VerMarksVo.Reflect(originReflect.getId(), originReflect.getRName()));
-            }
-            if (statement.getEntityMarks() != null && statement.getEntityMarks().size() > 0) {
-                result.addEntities(statement.getEntityMarks());
-            }
-            if (statement.getRelationMarks() != null && statement.getRelationMarks().size() > 0) {
-                result.addRelations(statement.getRelationMarks(), reflects);
-            }
-            result.setPageNo(1);
-            result.setTotalCount(result.getData().size());
-            return result;
+
+        List<RelationMark> markWithE2 = toRemoveRecord.getMarks_e2();
+        for(RelationMark relation: markWithE2){
+            relation.setStmtEntity2(null);
+            this.relationMarkRepo.save(relation);
         }
-        return null;
+
+        //清除这个局部实体对象
+        this.stmtEntitiesRepo.deleteById(toRemoveRecord.getId());
+    }
+
+    @Transactional
+    void deleteGlobalEntitiesByCountEqualsZERO(){
+        // 删除所有计数值为0的全局实体
+        this.globalEntitiesRepo.deleteAllByCountEquals(0);
     }
 
     @Transactional
@@ -198,75 +179,5 @@ public class EntitiesService {
     public RelationMark getRelationMark(long relationMarkId) {
         Optional<RelationMark> recordOptional = relationMarkRepo.findById(relationMarkId);
         return recordOptional.orElse(null);
-    }
-
-    @Transactional
-    public VerifyStatement getStatement(long statementId) {
-        Optional<VerifyStatement> recordOptional = verStateRepo.findById(statementId);
-        return recordOptional.orElse(null);
-    }
-
-    @Transactional
-    public boolean beginNext(Long id, boolean completeLast) {
-        Optional<VerifyStatement> statementOptional = Optional.empty();
-        Optional<User> userOptional = userRepo.findById(id);
-        if (userOptional.isPresent()) {  // 试图找到已经分配给这个用户的数据
-            statementOptional = verStateRepo.findByVerUserAndState(userOptional.get(), VerifyStatement.State.STARTED.ordinal());
-        }
-        if (statementOptional.isPresent()) { // 存在这个已经分配过的数据
-            if (completeLast) { // 标志已经完成这一条
-                VerifyStatement statement = statementOptional.get();
-                statement.setState(VerifyStatement.State.END.ordinal());
-                verStateRepo.save(statement);
-            } else {
-                return true;
-            }
-        }
-
-        //分配一条新的数据
-        statementOptional = verStateRepo.findFirstByState(VerifyStatement.State.UNSTARTED.ordinal());
-        if (statementOptional.isPresent()) {
-            VerifyStatement statement = statementOptional.get();
-            // 更新审批文本状态
-//            if (statement.getEntityMarks() != null && statement.getEntityMarks().size() > 0) {
-            for (int i = 0, size = statement.getEntityMarks().size(); i < size; ++i) {
-                EntityMark mark = statement.getEntityMarks().get(i);
-                // 文本更新为已审核状态
-                mark.setReviewed(1);
-                entityMarkRepo.save(mark);
-            }
-//            }
-//            if (statement.getRelationMarks() != null && statement.getRelationMarks().size() > 0) {
-            for (int i = 0, size = statement.getRelationMarks().size(); i < size; ++i) {
-                RelationMark mark = statement.getRelationMarks().get(i);
-                // 文本更新为已审核状态
-                mark.setReviewed(1);
-                relationMarkRepo.save(mark);
-//                }
-            }
-            statement.setVerUser(userRepo.getOne(id));
-            statement.setState(VerifyStatement.State.STARTED.ordinal());
-            verStateRepo.save(statement);
-            return true;
-        }
-        return false;
-    }
-
-    @Transactional
-    public List<String> beginWithPrefixOpinion(String prefix){
-        List<MarkOpinion> markOpinions = markOpinionRepo.findByOpinionStartingWith(prefix);
-        List<String> opinions = null;
-        if(markOpinions!=null&&markOpinions.size()>0){
-            opinions = markOpinions.stream().map(MarkOpinion::getOpinion).collect(Collectors.toList());
-        }
-        return opinions;
-    }
-
-    @Transactional
-    public EntityReflectVo getEntityReflect(){
-        List<EntityReflect> entityReflectList = this.entiReflectRepo.findAll();
-        EntityReflectVo result = new EntityReflectVo();
-        result.addEntities(entityReflectList);
-        return result;
     }
 }

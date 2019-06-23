@@ -38,19 +38,19 @@ public class RelationMark {
     private int verifyResult;
 
     @Column(nullable = true)
-    private String rela_rank;//  模型提供的关系排名，可能为Null
+    private String relaRank;//  模型提供的关系排名，可能为Null
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "stat_id")
     @JsonIgnoreProperties("relationMarks")
     private VerifyStatement statement;
 
-    @ManyToOne(cascade = CascadeType.DETACH, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
     @JoinColumn(name = "stmt_e1")
     @JsonIgnoreProperties("marks_e1")
     private StmtEntities stmtEntity1;   // 存放标注实体在statement实体表里的id
 
-    @ManyToOne(cascade = CascadeType.DETACH, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
     @JoinColumn(name = "stmt_e2")
     @JsonIgnoreProperties("marks_e2")
     private StmtEntities stmtEntity2;

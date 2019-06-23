@@ -17,12 +17,24 @@ public class GlobalEntities {
     private long id;
 
     @Column(nullable = false, length = 127)
-    private String entity_name;  // 实体名字，非空
+    private String entityName;  // 实体名字，非空
 
     @Column(columnDefinition = "int default 1")
-    private String count;
+    private Integer count;
 
-    @OneToMany(mappedBy = "globalEntity", cascade = CascadeType.DETACH, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "globalEntity", cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
     @JsonIgnoreProperties("globalEntity")
     private List<StmtEntities> stmtEntities;
+
+    public GlobalEntities(){}
+
+    public GlobalEntities(String name){
+        this.entityName = name;
+        this.count = 1;
+    }
+
+    public boolean updateCount(int delta){
+        this.count += delta;
+        return this.count > 0;
+    }
 }

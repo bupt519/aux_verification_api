@@ -1,9 +1,12 @@
 package cn.edu.bupt.bean.po;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import javafx.util.Pair;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -27,16 +30,61 @@ public class StmtEntities {
     @Column(name="entity_tail", nullable = false)
     private int tail;  //实体的尾位置
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
     @JoinColumn(name = "stat_id")
-    @JsonIgnoreProperties("entities")
+    @JsonIgnore
     private VerifyStatement statement;
 
-    @OneToMany(mappedBy = "stmtEntity1", cascade = CascadeType.DETACH, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "stmtEntity1", cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
     @JsonIgnoreProperties("stmtEntity1")
     private List<RelationMark> marks_e1;
 
-    @OneToMany(mappedBy = "stmtEntity2", cascade = CascadeType.DETACH, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "stmtEntity2", cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
     @JsonIgnoreProperties("stmtEntity2")
     private List<RelationMark> marks_e2;
+
+    public List<RelationMark> getMarks_e1() {
+        return marks_e1;
+    }
+
+    public StmtEntities(){}
+
+    public StmtEntities(VerifyStatement statement, int head, int tail){
+        this.statement = statement;
+        this.head = head;
+        this.tail = tail;
+    }
+
+    public void updateSE(StmtEntities curValue){
+        this.head = curValue.getHead();
+        this.tail = curValue.getTail();
+    }
+
+    public void updateGlobalEntity(String nonTagContent){
+        if(this.globalEntity == null){
+            String entityName = nonTagContent.substring(this.head, this.tail);
+            this.globalEntity = new GlobalEntities(entityName);
+        }
+    }
+
+    public boolean isIntersect(StmtEntities another){
+        if(another.tail <= this.head || another.head >= this.tail) //  b区间的上限< a区间的下限 或 b区间的下限>a的上限 则不想交
+            return false;
+        return true;
+    }
+
+    public boolean isEqual(StmtEntities another){
+        return another.head==this.head && another.tail==this.tail;
+    }
+
+    public static List<StmtEntities> list2Entities(List<Pair<Integer, Integer>> entitiesLoc, VerifyStatement statement){
+        // 把修改后的实体坐标转换成实体类，方便比较更新/插入实体表
+        List<StmtEntities> res_list = new ArrayList<>();
+        for(Pair<Integer, Integer> entity: entitiesLoc){
+            int start = entity.getKey();
+            int end = entity.getValue();
+            res_list.add(new StmtEntities(statement, start, end));
+        }
+        return  res_list;
+    }
 }

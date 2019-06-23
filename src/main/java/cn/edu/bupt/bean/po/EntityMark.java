@@ -5,7 +5,9 @@ import javafx.util.Pair;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,12 +52,14 @@ public class EntityMark {
         if (this.content.equals(this.getOriginContent())) { //没有发生修改
             if (this.passed == 0) this.setVerifyResult(VerifyResult.DENIED.ordinal()); //没有通过- 拒绝
             else this.setVerifyResult(VerifyResult.ACCEPT.ordinal()); // 通过 - 直接通过
-            return false;
         } else {  //发生了修改
             if (this.passed == 0) this.setVerifyResult(VerifyResult.MODIFY_DENIED.ordinal());
-            else this.setVerifyResult(VerifyResult.MODIFY_ACCEPT.ordinal());
-            return true;
+            else {
+                this.setVerifyResult(VerifyResult.MODIFY_ACCEPT.ordinal());
+                return true;
+            }
         }
+        return false;
     }
 
     private static String tagPatternTailStr = "</[on][a-z]?>";
@@ -97,7 +101,7 @@ public class EntityMark {
         return fullTagContent.replace(otherTagTail, "");
     }
 
-    public String recoverTagContent(String content){
+    public static String recoverTagContent(String content){
         // 将前端返回的字符串还原回实体标注格式
         //把每个<n*> 改成</o> , 若结尾不是</n*>则加上</o>
         Matcher matcher = tagPatternHead.matcher(content);
@@ -115,5 +119,27 @@ public class EntityMark {
             tagContent = tagContent.substring(3); // 去除首部的<o>
 
         return tagContent.replace("></o>",">"); // 最后消除紧跟在别的实体后面的的</o>
+    }
+
+    public static List<Pair<Integer, Integer>> getEntitiesLoc(String content){
+        List<Pair<Integer, Integer>> entities = new ArrayList<>();
+        //  类似getFullContent, 找</tag> 的位置，并构造出原始字符串
+        Matcher matcher = tagPatternTail.matcher(content);
+
+        int end = 0; //最初的end是句子的首部
+        StringBuffer nonTagContent = new StringBuffer();
+        while(matcher.find()){
+            int start = matcher.start();
+            String tag = content.substring(start, matcher.end());
+            int nonTagStart = nonTagContent.length();
+            nonTagContent.append(content.substring(end, start));
+            int nonTagEnd = nonTagContent.length();
+            if(!tag.equals(otherTagTail)) {  // 上一个end到这一个start之间是一个实体
+                entities.add(new Pair<>(nonTagStart, nonTagEnd));
+                System.out.println(nonTagContent.toString().substring(nonTagStart, nonTagEnd));
+            }
+            end = matcher.end();
+        }
+        return entities;
     }
 }

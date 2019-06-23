@@ -1,7 +1,9 @@
 package cn.edu.bupt.controller;
 
 import cn.edu.bupt.bean.po.EntityMark;
+import cn.edu.bupt.bean.po.StmtEntities;
 import cn.edu.bupt.service.VerService;
+import cn.edu.bupt.service.EntitiesService;
 import cn.edu.bupt.util.ResponseResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +24,12 @@ public class ResourceController {
 
     private final VerService verService;
 
+    private final EntitiesService entitiesService;
+
     @Autowired
-    public ResourceController(VerService verService) {
+    public ResourceController(VerService verService, EntitiesService entitiesService) {
         this.verService = verService;
+        this.entitiesService = entitiesService;
     }
 
     //@GetMapping("pdf/{pdfName}")
@@ -66,6 +71,17 @@ public class ResourceController {
             resList.add(entityMark.getFullTagContent());
             resList.add(entityMark.recoverTagContent(entityMark.getFullTagContent()));
         }
+        return ResponseEntity.ok(ResponseResult.of("success", resList));
+    }
+
+    @GetMapping("test/testStmtEntity/{entityId}")
+    public ResponseEntity<ResponseResult<List<StmtEntities>>> testStmtEntity(@PathVariable int entityId){
+        //从数据库中读取一个实体，并将标注文本转化为 无标签/全标签的结果，返回
+        log.info("---------GET testStmtEntity---------------------");
+        List<StmtEntities> resList = new ArrayList<>();
+        EntityMark entityMark = this.entitiesService.getEntity(entityId);
+        resList = this.entitiesService.dealWithEntitiesModify(entityMark);
+
         return ResponseEntity.ok(ResponseResult.of("success", resList));
     }
 }

@@ -7,6 +7,10 @@ public interface GlobalEntitiesRepo extends JpaRepository<GlobalEntities, Long> 
 
     GlobalEntities findById(long id);
 
+    GlobalEntities findByEntityName(String entity_name);
+
     @Override
     void deleteById(Long aLong);
+
+    void deleteAllByCountEquals(int value);
 }

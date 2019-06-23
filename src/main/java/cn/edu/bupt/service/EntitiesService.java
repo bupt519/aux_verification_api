@@ -25,28 +25,17 @@ public class EntitiesService {
 
     private final RelationMarkRepo relationMarkRepo;
 
-    private final VerStateRepo verStateRepo;
 
     private final GlobalEntitiesRepo globalEntitiesRepo;
 
     private final StmtEntitiesRepo stmtEntitiesRepo;
 
-    private final UserRepo userRepo;
-
-    private final MarkOpinionRepo markOpinionRepo;
-
-    private final EntiReflectRepo entiReflectRepo;
-
     @Autowired
-    public EntitiesService(EntityMarkRepo entityMarkRepo, RelationMarkRepo relationMarkRepo, VerStateRepo verStateRepo,
-                           StmtEntitiesRepo stmtEntitiesRepo, UserRepo userRepo, MarkOpinionRepo markOpinionRepo, EntiReflectRepo entiReflectRepo,GlobalEntitiesRepo globalEntitiesRepo) {
+    public EntitiesService(EntityMarkRepo entityMarkRepo, RelationMarkRepo relationMarkRepo,
+                           StmtEntitiesRepo stmtEntitiesRepo,GlobalEntitiesRepo globalEntitiesRepo) {
         this.entityMarkRepo = entityMarkRepo;
         this.relationMarkRepo = relationMarkRepo;
-        this.verStateRepo = verStateRepo;
         this.stmtEntitiesRepo = stmtEntitiesRepo;
-        this.userRepo = userRepo;
-        this.markOpinionRepo = markOpinionRepo;
-        this.entiReflectRepo = entiReflectRepo;
         this.globalEntitiesRepo = globalEntitiesRepo;
     }
 

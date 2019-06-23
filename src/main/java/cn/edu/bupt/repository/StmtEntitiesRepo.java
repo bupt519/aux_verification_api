@@ -10,7 +10,7 @@ public interface StmtEntitiesRepo extends JpaRepository<StmtEntities, Long> {
 
     List<StmtEntities> findAllByStatementOrderByHead(VerifyStatement statement);
 
-    List<StmtEntities> findAllByStatementAndHeadIsLessThanAndTailGreaterThan(VerifyStatement statement,int anotherTail,int anotherHead);
+    List<StmtEntities> findAllByStatementAndHeadLessThanAndTailGreaterThanOrderByHeadAsc(VerifyStatement statement,int anotherTail,int anotherHead);
 
     @Override
     void deleteById(Long aLong);

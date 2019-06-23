@@ -1,10 +1,15 @@
 package cn.edu.bupt.bean.po;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import javafx.util.Pair;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Entity
 @Table(name = "relation_mark")
@@ -82,5 +87,23 @@ public class RelationMark {
             if (this.passed == 0) this.setVerifyResult(VerifyResult.MODIFY_DENIED.ordinal());
             else this.setVerifyResult(VerifyResult.MODIFY_ACCEPT.ordinal());
         }
+    }
+
+    private static String tagPatternStr = "<e[12]>[^<]+</e[12]>";
+    private static Pattern tagPattern = Pattern.compile(tagPatternStr);
+    public static List<Pair<Integer, Integer>> getEntitiesLoc(String content){
+        List<Pair<Integer, Integer>> entities = new ArrayList<>();
+        //  类似getFullContent, 找</tag> 的位置，并构造出原始字符串
+        Matcher matcher = tagPattern.matcher(content);
+
+        int offset = 0; // 头标签是4个offset， 尾标签5个，则一个实体9个
+        while(matcher.find()){
+            int start = matcher.start();
+            int end = matcher.end();
+            System.out.println(content.substring(start, end));
+            entities.add(new Pair<>(start - offset, end - offset - 9));
+            offset += 9;
+        }
+        return entities;
     }
 }

@@ -1,10 +1,13 @@
 package cn.edu.bupt.controller;
 
 import cn.edu.bupt.bean.po.EntityMark;
+import cn.edu.bupt.bean.po.RelationMark;
 import cn.edu.bupt.bean.po.StmtEntities;
+import cn.edu.bupt.repository.RelationMarkRepo;
 import cn.edu.bupt.service.VerService;
 import cn.edu.bupt.service.EntitiesService;
 import cn.edu.bupt.util.ResponseResult;
+import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -12,6 +15,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import cn.edu.bupt.service.RelationService;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,10 +30,13 @@ public class ResourceController {
 
     private final EntitiesService entitiesService;
 
+    private final RelationService relationService;
+
     @Autowired
-    public ResourceController(VerService verService, EntitiesService entitiesService) {
+    public ResourceController(VerService verService, EntitiesService entitiesService, RelationService relationService) {
         this.verService = verService;
         this.entitiesService = entitiesService;
+        this.relationService = relationService;
     }
 
     //@GetMapping("pdf/{pdfName}")
@@ -83,5 +90,16 @@ public class ResourceController {
         resList = this.entitiesService.dealWithEntitiesModify(entityMark);
 
         return ResponseEntity.ok(ResponseResult.of("success", resList));
+    }
+
+    @GetMapping("test/testRelationEntity/{relationId}")
+    public ResponseEntity<ResponseResult<String>> testRelationEntity(@PathVariable int relationId){
+        //从数据库中读取一个关系，并将标注文本转化为 无标签/全标签的结果，返回a
+        log.info("---------GET testRelationEntity---------------------");
+        Pair<Boolean, String> checkRes = new Pair<>(true, "关系标注解析成功！");
+        RelationMark relationMark = this.relationService.getRelationMark(relationId);
+        checkRes = this.relationService.checkEntityExistence(relationMark);
+
+        return ResponseEntity.ok(ResponseResult.of("success", checkRes.getValue()));
     }
 }

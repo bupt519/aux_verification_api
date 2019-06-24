@@ -53,19 +53,17 @@ public class VerMarksVo {
         private String relationName;
     }
 
-    public void addEntities(List<EntityMark> originMarks){
-        for (EntityMark originMark : originMarks) {
-            MarkVo vo = new MarkVo();
-            vo.setId(originMark.getId());
-            vo.setContent(originMark.getContent());
-            vo.setPassed(originMark.getPassed());
-            vo.setReviewed(originMark.getReviewed());
-            vo.setVerDate(originMark.getVerDate());
-            vo.setType(0);
-            vo.setStatId(originMark.getStatement().getId());
-            vo.setDescription(originMark.getDescription());
-            data.add(vo);
-        }
+    public void addEntities(EntityMark originMark){
+        MarkVo vo = new MarkVo();
+        vo.setId(originMark.getId());
+        vo.setContent(originMark.getContent());
+        vo.setPassed(originMark.getPassed());
+        vo.setReviewed(originMark.getReviewed());
+        vo.setVerDate(originMark.getVerDate());
+        vo.setType(0);
+        vo.setStatId(originMark.getStatement().getId());
+        vo.setDescription(originMark.getDescription());
+        data.add(vo);
     }
 
     public void addRelations(List<RelationMark> originMarks, List<Reflect> reflects){

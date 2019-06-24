@@ -69,7 +69,7 @@ public class RelationService {
         Pair<Boolean, String> checkEntity = this.checkEntityExistence(record);
         if (!checkEntity.getKey()){ // 实体不合法
             this.relationMarkRepo.save(record);
-        return ResponseResult.of("审批失败", checkEntity.getValue());
+            return ResponseResult.of("审批失败", checkEntity.getValue());
         }
         record.setPassed(passed);
         record.setVerDate(new Date());
@@ -126,14 +126,21 @@ public class RelationService {
                 statement,entity2.getTail(),entity2.getHead());
         if(coverEntities.size() == 0){
             record.setStmtEntity2(null);
-            return new Pair<>(false,"选中的实体e2：‘" + nonTagContent.substring(entity2.getHead(),entity1.getTail())
+            return new Pair<>(false,"选中的实体e2：‘" + nonTagContent.substring(entity2.getHead(),entity2.getTail())
                     + "’ 不存在于实体标注中");
         }
         log.info("---------------找到的实体名2为：" + coverEntities.get(0).getGlobalEntity().getEntityName());
         record.setStmtEntity2(coverEntities.get(0)); // 第一个覆盖了的实体
+        record.setContentToFront();
         return checkRes;
     }
 
+    @Transactional
+    public Pair<Boolean, String> checkEntityExistAndSav(RelationMark record){
+        Pair<Boolean, String> checkEntity = this.checkEntityExistence(record);
+        this.relationMarkRepo.save(record);
+        return checkEntity;
+    }
 
     @Transactional
     public RelationMark getRelationMark(long relationMarkId) {

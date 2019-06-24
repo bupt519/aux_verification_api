@@ -100,10 +100,36 @@ public class RelationMark {
         while(matcher.find()){
             int start = matcher.start();
             int end = matcher.end();
-            System.out.println(content.substring(start, end));
+            //System.out.println(content.substring(start, end));
             entities.add(new Pair<>(start - offset, end - offset - 9));
             offset += 9;
         }
         return entities;
+    }
+
+    public void setContentToFront(){
+        EntityMark stmtEntityMark  = this.statement.getEntityMark();
+        if(stmtEntityMark != null){
+            int start = 0;
+            String trueString = "";
+            String nonTagContent = stmtEntityMark.getNonTagContent();
+            if(this.stmtEntity1 != null){
+                trueString = trueString + nonTagContent.substring(start, this.stmtEntity1.getHead());
+                trueString += "<e1>";
+                trueString = trueString + nonTagContent.substring(this.stmtEntity1.getHead(), this.stmtEntity1.getTail());
+                trueString += "</e1>";
+                start = this.stmtEntity1.getTail();
+            }
+
+            if(this.stmtEntity2 != null){
+                trueString = trueString + nonTagContent.substring(start, this.stmtEntity2.getHead());
+                trueString += "<e2>";
+                trueString = trueString + nonTagContent.substring(this.stmtEntity2.getHead(), this.stmtEntity2.getTail());
+                trueString += "</e2>";
+                start = this.stmtEntity2.getTail();
+            }
+            trueString += nonTagContent.substring(start); //补上余下的量
+            this.content = trueString;
+        }
     }
 }

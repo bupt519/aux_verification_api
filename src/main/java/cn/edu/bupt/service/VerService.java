@@ -274,4 +274,8 @@ public class VerService {
     public List<VerifyStatement> getStatementsBetween(long beginId, long endId){
         return this.verStateRepo.findAllByIdBetween(beginId, endId);
     }
+
+    public List<RelationMark> getRelationMarksByStatement(VerifyStatement statement){
+        return this.relationMarkRepo.findAllByStatement(statement);
+    }
 }

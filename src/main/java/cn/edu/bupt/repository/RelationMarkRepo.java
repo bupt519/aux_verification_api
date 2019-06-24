@@ -14,5 +14,7 @@ public interface RelationMarkRepo extends JpaRepository<RelationMark, Long> {
 
     Page<RelationMark> findByStatementIn(List<VerifyStatement> stats, Pageable pageable);
 
+   List<RelationMark> findAllByStatement(VerifyStatement stats);
+
     int countByPassedAndStatement(int passed, VerifyStatement statement);
 }

@@ -3,6 +3,7 @@ package cn.edu.bupt.bean.po;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import javafx.util.Pair;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.regex.Pattern;
 @Table(name = "entity_mark")
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler", "fieldHandler"})
 @Data
+@Slf4j
 public class EntityMark {
 
     @Id
@@ -128,6 +130,7 @@ public class EntityMark {
 
         int end = 0; //最初的end是句子的首部
         StringBuffer nonTagContent = new StringBuffer();
+        StringBuffer entitiesStr = new StringBuffer("Entities  includes:");
         while(matcher.find()){
             int start = matcher.start();
             String tag = content.substring(start, matcher.end());
@@ -136,10 +139,12 @@ public class EntityMark {
             int nonTagEnd = nonTagContent.length();
             if(!tag.equals(otherTagTail)) {  // 上一个end到这一个start之间是一个实体
                 entities.add(new Pair<>(nonTagStart, nonTagEnd));
-                System.out.println(nonTagContent.toString().substring(nonTagStart, nonTagEnd));
+                entitiesStr.append(nonTagContent.toString().substring(nonTagStart, nonTagEnd) + ",");
             }
             end = matcher.end();
         }
+        System.out.println(entitiesStr.toString());
+        //System.out.println(nonTagContent.toString());
         return entities;
     }
 }

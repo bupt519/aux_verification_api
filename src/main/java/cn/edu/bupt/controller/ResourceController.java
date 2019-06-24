@@ -3,6 +3,7 @@ package cn.edu.bupt.controller;
 import cn.edu.bupt.bean.po.EntityMark;
 import cn.edu.bupt.bean.po.RelationMark;
 import cn.edu.bupt.bean.po.StmtEntities;
+import cn.edu.bupt.bean.po.VerifyStatement;
 import cn.edu.bupt.repository.RelationMarkRepo;
 import cn.edu.bupt.service.VerService;
 import cn.edu.bupt.service.EntitiesService;
@@ -101,5 +102,26 @@ public class ResourceController {
         checkRes = this.relationService.checkEntityExistence(relationMark);
 
         return ResponseEntity.ok(ResponseResult.of("success", checkRes.getValue()));
+    }
+
+    @GetMapping("processData/fillEntities/{statementId}")
+    public ResponseEntity<ResponseResult<String>> testRelationEntity(@PathVariable long statementId){
+        //从数据库中自statementId开始的所有 句子的实体/关系标注，解析并保存实体结果，解析并填充关系映射
+        log.info("---------GET fillEntities---------------------");
+        Pair<Boolean, String> checkRes = new Pair<>(true, "关系标注解析成功！");
+        //List<VerifyStatement> statements = this.verService.getStatements(statementId); // 获取id>= statementId的所有statement
+        List<VerifyStatement> statements = this.verService.getStatementsBetween(statementId, statementId + 2); // 获取id>= statementId的所有statement
+        for(VerifyStatement statement: statements){
+            EntityMark entityMark = statement.getEntityMark();
+            this.entitiesService.dealWithEntitiesModify(entityMark); // 将这个实体标注数据的实体导入库
+            List<RelationMark> relationMarks = this.verService.getRelationMarksByStatement(statement);
+            for(RelationMark relationMark :relationMarks){
+                checkRes = this.relationService.checkEntityExistAndSav(relationMark);
+                if(!checkRes.getKey()){
+                    log.debug("关系id=%d 数据存在问题，原因：%s", relationMark.getId(), checkRes.getValue());
+                }
+            }
+        }
+        return ResponseEntity.ok(ResponseResult.of("success", null));
     }
 }

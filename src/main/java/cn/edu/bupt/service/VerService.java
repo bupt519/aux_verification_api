@@ -154,8 +154,8 @@ public class VerService {
 //            verStateRepo.save(statement);
 //
 //            // 更新审批文本状态
-//            for (int i = 0, size = statement.getEntityMarks().size(); i < size; ++i) {
-//                EntityMark mark = statement.getEntityMarks().get(i);
+//            for (int i = 0, size = statement.getEntityMark().size(); i < size; ++i) {
+//                EntityMark mark = statement.getEntityMark().get(i);
 //                // 文本更新为已审核状态
 //                mark.setReviewed(1);
 //                entityMarkRepo.save(mark);
@@ -175,8 +175,8 @@ public class VerService {
             for (RelationReflect originReflect : originReflects) {
                 reflects.add(new VerMarksVo.Reflect(originReflect.getId(), originReflect.getRName()));
             }
-            if (statement.getEntityMarks() != null && statement.getEntityMarks().size() > 0) {
-                result.addEntities(statement.getEntityMarks());
+            if (statement.getEntityMark() != null && statement.getEntityMark().size() > 0) {
+                result.addEntities(statement.getEntityMark());
             }
             if (statement.getRelationMarks() != null && statement.getRelationMarks().size() > 0) {
                 result.addRelations(statement.getRelationMarks(), reflects);
@@ -228,9 +228,9 @@ public class VerService {
         if (statementOptional.isPresent()) {
             VerifyStatement statement = statementOptional.get();
             // 更新审批文本状态
-//            if (statement.getEntityMarks() != null && statement.getEntityMarks().size() > 0) {
-            for (int i = 0, size = statement.getEntityMarks().size(); i < size; ++i) {
-                EntityMark mark = statement.getEntityMarks().get(i);
+//            if (statement.getEntityMark() != null && statement.getEntityMark().size() > 0) {
+            for (int i = 0, size = statement.getEntityMark().size(); i < size; ++i) {
+                EntityMark mark = statement.getEntityMark().get(i);
                 // 文本更新为已审核状态
                 mark.setReviewed(1);
                 entityMarkRepo.save(mark);
@@ -268,5 +268,9 @@ public class VerService {
         EntityReflectVo result = new EntityReflectVo();
         result.addEntities(entityReflectList);
         return result;
+    }
+
+    public List<VerifyStatement> getStatements(long beginId){
+        return this.verStateRepo.findAllByIdGreaterThanEqual(beginId);
     }
 }

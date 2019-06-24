@@ -106,7 +106,7 @@ public class RelationService {
         Pair<Boolean, String> checkRes = new Pair<>(true, "关系数据审核成功");
         List<Pair<Integer, Integer>> entitiesLoc = RelationMark.getEntitiesLoc(record.getContent());
         VerifyStatement statement = record.getStatement();
-        EntityMark entityMark = statement.getEntityMarks().get(0);
+        EntityMark entityMark = statement.getEntityMark();
         String nonTagContent = entityMark.getNonTagContent();
         List<StmtEntities> curEntities = StmtEntities.list2Entities(entitiesLoc, statement);
         StmtEntities entity1 = curEntities.get(0);

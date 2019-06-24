@@ -43,7 +43,7 @@ public class EntityMark {
 //    @Enumerated(EnumType.ORDINAL)
     private int verifyResult;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "stat_id")
     @JsonIgnoreProperties("entityMarks")
     private VerifyStatement statement;

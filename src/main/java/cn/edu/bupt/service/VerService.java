@@ -175,7 +175,7 @@ public class VerService {
             for (RelationReflect originReflect : originReflects) {
                 reflects.add(new VerMarksVo.Reflect(originReflect.getId(), originReflect.getRName()));
             }
-            if (statement.getEntityMark() != null && statement.getEntityMark().size() > 0) {
+            if (statement.getEntityMark() != null) {
                 result.addEntities(statement.getEntityMark());
             }
             if (statement.getRelationMarks() != null && statement.getRelationMarks().size() > 0) {
@@ -228,21 +228,18 @@ public class VerService {
         if (statementOptional.isPresent()) {
             VerifyStatement statement = statementOptional.get();
             // 更新审批文本状态
-//            if (statement.getEntityMark() != null && statement.getEntityMark().size() > 0) {
-            for (int i = 0, size = statement.getEntityMark().size(); i < size; ++i) {
-                EntityMark mark = statement.getEntityMark().get(i);
+            if (statement.getEntityMark() != null) {
+                EntityMark mark = statement.getEntityMark();
                 // 文本更新为已审核状态
                 mark.setReviewed(1);
                 entityMarkRepo.save(mark);
             }
-//            }
-//            if (statement.getRelationMarks() != null && statement.getRelationMarks().size() > 0) {
+
             for (int i = 0, size = statement.getRelationMarks().size(); i < size; ++i) {
                 RelationMark mark = statement.getRelationMarks().get(i);
                 // 文本更新为已审核状态
                 mark.setReviewed(1);
                 relationMarkRepo.save(mark);
-//                }
             }
             statement.setVerUser(userRepo.getOne(id));
             statement.setState(VerifyStatement.State.STARTED.ordinal());
@@ -272,5 +269,9 @@ public class VerService {
 
     public List<VerifyStatement> getStatements(long beginId){
         return this.verStateRepo.findAllByIdGreaterThanEqual(beginId);
+    }
+
+    public List<VerifyStatement> getStatementsBetween(long beginId, long endId){
+        return this.verStateRepo.findAllByIdBetween(beginId, endId);
     }
 }

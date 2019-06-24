@@ -37,7 +37,7 @@ public class VerifyStatement {
 //    @Enumerated(EnumType.ORDINAL)
     private int state;
 
-    @OneToMany(mappedBy = "statement", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "statement", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties("statement")
     private EntityMark entityMark;
 

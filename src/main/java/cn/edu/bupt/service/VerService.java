@@ -1,6 +1,7 @@
 package cn.edu.bupt.service;
 
 import cn.edu.bupt.bean.po.*;
+import cn.edu.bupt.bean.vo.RelationReflectVo;
 import cn.edu.bupt.bean.vo.VerMarksVo;
 import cn.edu.bupt.bean.vo.EntityReflectVo;
 import cn.edu.bupt.repository.*;
@@ -46,7 +47,7 @@ public class VerService {
         this.entiReflectRepo = entiReflectRepo;
     }
 
-    @Transactional
+    /*@Transactional
     public ResponseResult<String> dealWithEntity(long userId, long entityId, long statId, String content, int passed,
                                                  String description) {
         EntityMark record = getEntity(entityId);
@@ -66,13 +67,6 @@ public class VerService {
         record.setDescription(description);
         record.updateVerifyResult();
         entityMarkRepo.save(record);
-        // 如果该段落所有文本全部审核完毕，更新段落表的状态
-//        if (relationMarkRepo.countByPassedAndStatement(-1, record.getStatement()) == 0 &&
-//                entityMarkRepo.countByPassedAndStatement(-1, record.getStatement()) == 0) {
-//            VerifyStatement statement = record.getStatement();
-//            statement.setState(2);
-//            verStateRepo.save(statement);
-//        }
         return ResponseResult.of("审批成功", null);
     }
 
@@ -133,7 +127,7 @@ public class VerService {
 
         relationMarkRepo.save(record);
         return ResponseResult.of("关系添加成功", null);
-    }
+    }*/
 
     @Transactional
     public VerMarksVo curUnViewedStatement(long userId, int pageNo, int pageSize) {
@@ -175,8 +169,10 @@ public class VerService {
             for (RelationReflect originReflect : originReflects) {
                 reflects.add(new VerMarksVo.Reflect(originReflect.getId(), originReflect.getRName()));
             }
-            if (statement.getEntityMark() != null) {
-                result.addEntities(statement.getEntityMark());
+            EntityMark entityMark = statement.getEntityMark();
+            if (entityMark != null) {
+                result.setRawContent(entityMark.getNonTagContent());
+                result.addEntities(entityMark);
             }
             if (statement.getRelationMarks() != null && statement.getRelationMarks().size() > 0) {
                 result.addRelations(statement.getRelationMarks(), reflects);
@@ -264,6 +260,14 @@ public class VerService {
         List<EntityReflect> entityReflectList = this.entiReflectRepo.findAll();
         EntityReflectVo result = new EntityReflectVo();
         result.addEntities(entityReflectList);
+        return result;
+    }
+
+    @Transactional
+    public RelationReflectVo getRelationReflect(){
+        List<RelationReflect> relationReflectList = this.relaReflectRepo.findAll();
+        RelationReflectVo result = new RelationReflectVo();
+        result.addRelations(relationReflectList);
         return result;
     }
 

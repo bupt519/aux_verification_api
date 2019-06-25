@@ -3,10 +3,13 @@ package cn.edu.bupt.controller;
 import cn.edu.bupt.bean.jo.EntityParam;
 import cn.edu.bupt.bean.jo.RelationParam;
 import cn.edu.bupt.bean.vo.Identity;
+import cn.edu.bupt.bean.vo.RelationReflectVo;
 import cn.edu.bupt.bean.vo.VerMarksVo;
 import cn.edu.bupt.bean.vo.EntityReflectVo;
 import cn.edu.bupt.constant.OauthConsts;
 import cn.edu.bupt.constant.ParamConsts;
+import cn.edu.bupt.service.EntitiesService;
+import cn.edu.bupt.service.RelationService;
 import cn.edu.bupt.service.VerService;
 import cn.edu.bupt.util.ResponseResult;
 import lombok.extern.slf4j.Slf4j;
@@ -26,10 +29,13 @@ import java.util.Map;
 public class VerifyController {
 
     private final VerService verService;
-
+    private final EntitiesService entitiesService;
+    private final RelationService relationService;
     @Autowired
-    public VerifyController(VerService verService) {
+    public VerifyController(VerService verService, EntitiesService entitiesService, RelationService relationService) {
         this.verService = verService;
+        this.entitiesService = entitiesService;
+        this.relationService = relationService;
     }
 
     @PutMapping("entity")
@@ -41,7 +47,7 @@ public class VerifyController {
                     .body(ResponseResult.of("审核失败", "审核失败"));
 //            return ResponseResult.error(ResultTypeEnum.PARAM_ERROR, "审核失败", null);
         }
-        ResponseResult<String> result = verService.dealWithEntity(identity.getId(), param.getId(),
+        ResponseResult<String> result = entitiesService.dealWithEntity(identity.getId(), param.getId(),
                 param.getStatId(), param.getContent(), param.getPassed(), param.getDescription());
         return ResponseEntity.ok(result);
     }
@@ -55,7 +61,7 @@ public class VerifyController {
                     .body(ResponseResult.of("审核失败", "审核失败"));
 //            return ResponseResult.error(ResultTypeEnum.PARAM_ERROR, "审批失败", null);
         }
-        ResponseResult<String> result = verService.dealWithRelation(identity.getId(), param.getId(), param.getStatId(),
+        ResponseResult<String> result = relationService.dealWithRelation(identity.getId(), param.getId(), param.getStatId(),
                 param.getContent(), param.getPassed(), param.getRelationId(), param.getDescription());
         return ResponseEntity.ok(result);
     }
@@ -68,7 +74,7 @@ public class VerifyController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ResponseResult.of("关系添加失败", "文本内容为空或未选择关系"));
         }
-        ResponseResult<String> result = verService.addNewRelation(identity.getId(), param.getId(), param.getStatId(),
+        ResponseResult<String> result = relationService.addNewRelation(identity.getId(), param.getId(), param.getStatId(),
                 param.getContent(), param.getPassed(), param.getRelationId(), param.getDescription());
         return ResponseEntity.ok(result);
     }
@@ -130,4 +136,9 @@ public class VerifyController {
         return ResponseEntity.ok(ResponseResult.of("success", result));
     }
 
+    @GetMapping("util/relationReflect")
+    public ResponseEntity<ResponseResult<RelationReflectVo>> relationRelfectList(){
+        RelationReflectVo result = this.verService.getRelationReflect();
+        return ResponseEntity.ok(ResponseResult.of("success", result));
+    }
 }

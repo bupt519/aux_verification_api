@@ -25,6 +25,7 @@ public class VerMarksVo {
 
     private int totalCount;
 
+    private String rawContent;
 //    private List<EntityMarkVo> entityMarks;
 //
 //    private List<RelationMarkVo> relationMarks;

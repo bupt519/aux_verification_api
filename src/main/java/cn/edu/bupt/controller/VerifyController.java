@@ -63,6 +63,9 @@ public class VerifyController {
         }
         ResponseResult<String> result = relationService.dealWithRelation(identity.getId(), param.getId(), param.getStatId(),
                 param.getContent(), param.getPassed(), param.getRelationId(), param.getDescription());
+        if(result.getMessage().equals("审批失败"))
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ResponseResult.of("审核失败", result.getResult()));
         return ResponseEntity.ok(result);
     }
 

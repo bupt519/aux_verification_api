@@ -68,6 +68,7 @@ public class RelationService {
         //  检查待更新的content， 其中的文本是否合法
         Pair<Boolean, String> checkEntity = this.checkEntityExistence(record);
         if (!checkEntity.getKey()){ // 实体不合法
+            record.setPassed(-1);
             this.relationMarkRepo.save(record);
             return ResponseResult.of("审批失败", checkEntity.getValue());
         }

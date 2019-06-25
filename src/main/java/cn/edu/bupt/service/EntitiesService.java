@@ -75,7 +75,7 @@ public class EntitiesService {
     }
 
     public List<StmtEntities> dealWithEntitiesModify(EntityMark record){
-        List<Pair<Integer, Integer>> curEntitiesLoc = EntityMark.getEntitiesLoc(record.getContent());
+        List<Pair<Integer, Integer>> curEntitiesLoc = record.getEntitiesLoc(record.getContent());
         VerifyStatement statement = record.getStatement();
         List<StmtEntities> originalEntities = this.stmtEntitiesRepo.findAllByStatementOrderByHead(statement); // 取出句子原来的所有entities
         List<StmtEntities> curEntities = StmtEntities.list2Entities(curEntitiesLoc, statement);
@@ -129,6 +129,7 @@ public class EntitiesService {
             this.globalEntitiesRepo.save(newGlobalEntity);
         }else{
             newGlobalEntity = new GlobalEntities(entityName);
+            this.globalEntitiesRepo.save(newGlobalEntity);
         }
         modified_record.setGlobalEntity(newGlobalEntity);
         this.stmtEntitiesRepo.save(modified_record);
@@ -148,7 +149,13 @@ public class EntitiesService {
             this.relationMarkRepo.save(relation);
         }
 
-        //清除这个局部实体对象
+        //清除这个局部实体对象,修改全局计数
+        GlobalEntities origiGlobalEntity = toRemoveRecord.getGlobalEntity();
+        if(origiGlobalEntity != null){
+            origiGlobalEntity = this.globalEntitiesRepo.findById(origiGlobalEntity.getId()); // 因为同一句里可能有重复的实体，重新取出它的当前值
+            origiGlobalEntity.updateCount(-1);
+            this.globalEntitiesRepo.save(origiGlobalEntity);
+        }
         this.stmtEntitiesRepo.deleteById(toRemoveRecord.getId());
     }
 

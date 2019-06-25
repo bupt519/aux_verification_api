@@ -29,7 +29,7 @@ public class User {
     @Column(columnDefinition = "varchar(255) default 'admin'")
     private String role;
 
-    @OneToMany(mappedBy = "verUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "verUser", fetch = FetchType.LAZY)
     @JsonIgnoreProperties("verUser")
     private List<VerifyStatement> statements;
 }

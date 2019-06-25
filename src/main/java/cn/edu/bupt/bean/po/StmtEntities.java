@@ -19,7 +19,7 @@ public class StmtEntities {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "entity_id")
     @JsonIgnoreProperties("StmtEntities")
     private GlobalEntities globalEntity;  // 对应的全局实体号
@@ -30,16 +30,16 @@ public class StmtEntities {
     @Column(name="entity_tail", nullable = false)
     private int tail;  //实体的尾位置
 
-    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stat_id")
     @JsonIgnore
     private VerifyStatement statement;
 
-    @OneToMany(mappedBy = "stmtEntity1", cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "stmtEntity1",fetch = FetchType.LAZY)
     @JsonIgnoreProperties("stmtEntity1")
     private List<RelationMark> marks_e1;
 
-    @OneToMany(mappedBy = "stmtEntity2", cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "stmtEntity2",fetch = FetchType.LAZY)
     @JsonIgnoreProperties("stmtEntity2")
     private List<RelationMark> marks_e2;
 

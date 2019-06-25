@@ -50,12 +50,12 @@ public class RelationMark {
     @JsonIgnoreProperties("relationMarks")
     private VerifyStatement statement;
 
-    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stmt_e1")
     @JsonIgnoreProperties("marks_e1")
     private StmtEntities stmtEntity1;   // 存放标注实体在statement实体表里的id
 
-    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stmt_e2")
     @JsonIgnoreProperties("marks_e2")
     private StmtEntities stmtEntity2;
@@ -91,19 +91,21 @@ public class RelationMark {
 
     private static String tagPatternStr = "<e[12]>[^<]+</e[12]>";
     private static Pattern tagPattern = Pattern.compile(tagPatternStr);
-    public static List<Pair<Integer, Integer>> getEntitiesLoc(String content){
+    public List<Pair<Integer, Integer>> getEntitiesLoc(String content){
         List<Pair<Integer, Integer>> entities = new ArrayList<>();
         //  类似getFullContent, 找</tag> 的位置，并构造出原始字符串
         Matcher matcher = tagPattern.matcher(content);
 
         int offset = 0; // 头标签是4个offset， 尾标签5个，则一个实体9个
+        StringBuffer relationsStr = new StringBuffer(String.format("    Relation %d includes:", this.id));
         while(matcher.find()){
             int start = matcher.start();
             int end = matcher.end();
-            //System.out.println(content.substring(start, end));
+            relationsStr.append(content.substring(start, end) + "  ");
             entities.add(new Pair<>(start - offset, end - offset - 9));
             offset += 9;
         }
+        System.out.println(relationsStr.toString());
         return entities;
     }
 

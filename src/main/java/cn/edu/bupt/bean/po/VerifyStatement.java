@@ -26,7 +26,7 @@ public class VerifyStatement {
     @Column(name = "mark_id")
     private int mark_id;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User verUser;
 

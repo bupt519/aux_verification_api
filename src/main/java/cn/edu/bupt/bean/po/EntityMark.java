@@ -123,14 +123,14 @@ public class EntityMark {
         return tagContent.replace("></o>",">"); // 最后消除紧跟在别的实体后面的的</o>
     }
 
-    public static List<Pair<Integer, Integer>> getEntitiesLoc(String content){
+    public List<Pair<Integer, Integer>> getEntitiesLoc(String content){
         List<Pair<Integer, Integer>> entities = new ArrayList<>();
         //  类似getFullContent, 找</tag> 的位置，并构造出原始字符串
         Matcher matcher = tagPatternTail.matcher(content);
 
         int end = 0; //最初的end是句子的首部
         StringBuffer nonTagContent = new StringBuffer();
-        StringBuffer entitiesStr = new StringBuffer("Entities  includes:");
+        StringBuffer entitiesStr = new StringBuffer(String.format("Entities %d includes:", this.id));
         while(matcher.find()){
             int start = matcher.start();
             String tag = content.substring(start, matcher.end());

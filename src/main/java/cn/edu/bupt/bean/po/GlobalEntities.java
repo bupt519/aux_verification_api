@@ -22,7 +22,7 @@ public class GlobalEntities {
     @Column(columnDefinition = "int default 1")
     private Integer count;
 
-    @OneToMany(mappedBy = "globalEntity", cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "globalEntity", fetch = FetchType.LAZY)
     @JsonIgnoreProperties("globalEntity")
     private List<StmtEntities> stmtEntities;
 

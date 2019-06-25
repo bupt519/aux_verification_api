@@ -109,16 +109,20 @@ public class ResourceController {
         //从数据库中自statementId开始的所有 句子的实体/关系标注，解析并保存实体结果，解析并填充关系映射
         log.info("---------GET fillEntities---------------------");
         Pair<Boolean, String> checkRes = new Pair<>(true, "关系标注解析成功！");
-        //List<VerifyStatement> statements = this.verService.getStatements(statementId); // 获取id>= statementId的所有statement
-        List<VerifyStatement> statements = this.verService.getStatementsBetween(statementId, statementId + 2); // 获取id>= statementId的所有statement
+        List<VerifyStatement> statements = this.verService.getStatements(statementId); // 获取id>= statementId的所有statement
+        //List<VerifyStatement> statements = this.verService.getStatementsBetween(statementId, statementId + 1); // 获取id>= statementId的所有statement
         for(VerifyStatement statement: statements){
             EntityMark entityMark = statement.getEntityMark();
             this.entitiesService.dealWithEntitiesModify(entityMark); // 将这个实体标注数据的实体导入库
             List<RelationMark> relationMarks = this.verService.getRelationMarksByStatement(statement);
             for(RelationMark relationMark :relationMarks){
-                checkRes = this.relationService.checkEntityExistAndSav(relationMark);
-                if(!checkRes.getKey()){
-                    log.debug("关系id=%d 数据存在问题，原因：%s", relationMark.getId(), checkRes.getValue());
+                try{
+                    checkRes = this.relationService.checkEntityExistAndSav(relationMark);
+                    if(!checkRes.getKey()){
+                        log.info(String.format("关系id=%d 数据存在问题，原因：%s", relationMark.getId(), checkRes.getValue()));
+                    }
+                }catch (Exception e){
+                    log.info(String.format("关系id=%d 数据存在问题，原因：数据异常（实体没有标全或者实体-关系数据文本对不上", relationMark.getId()));
                 }
             }
         }

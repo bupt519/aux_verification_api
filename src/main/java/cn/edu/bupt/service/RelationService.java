@@ -103,8 +103,10 @@ public class RelationService {
 
 
     public Pair<Boolean, String> checkEntityExistence(RelationMark record){
-        Pair<Boolean, String> checkRes = new Pair<>(true, "关系数据审核成功");
-        List<Pair<Integer, Integer>> entitiesLoc = RelationMark.getEntitiesLoc(record.getContent());
+        boolean successed = true;
+        String CausedBy = "Casued By:";
+
+        List<Pair<Integer, Integer>> entitiesLoc = record.getEntitiesLoc(record.getContent());
         VerifyStatement statement = record.getStatement();
         EntityMark entityMark = statement.getEntityMark();
         String nonTagContent = entityMark.getNonTagContent();
@@ -116,23 +118,31 @@ public class RelationService {
                 statement,entity1.getTail(),entity1.getHead());
         if(coverEntities.size() == 0){
             record.setStmtEntity1(null);
-            return new Pair<>(false,"选中的实体e1：‘" + nonTagContent.substring(entity1.getHead(),entity1.getTail())
-                    + "’ 不存在于实体标注中");
+            successed = false;
+            CausedBy += "  选中的实体e1：‘" + nonTagContent.substring(entity1.getHead(),entity1.getTail())
+                    + "’ 不存在于实体标注中";
+        }else {
+            //log.info("---------------找到的实体1名为：" + coverEntities.get(0).getGlobalEntity().getEntityName());
+            record.setStmtEntity1(coverEntities.get(0)); // 第一个覆盖了的实体
         }
-        log.info("---------------找到的实体1名为：" + coverEntities.get(0).getGlobalEntity().getEntityName());
-        record.setStmtEntity1(coverEntities.get(0)); // 第一个覆盖了的实体
 
         coverEntities = this.stmtEntitiesRepo.findAllByStatementAndHeadLessThanAndTailGreaterThanOrderByHeadAsc(
                 statement,entity2.getTail(),entity2.getHead());
         if(coverEntities.size() == 0){
             record.setStmtEntity2(null);
-            return new Pair<>(false,"选中的实体e2：‘" + nonTagContent.substring(entity2.getHead(),entity2.getTail())
-                    + "’ 不存在于实体标注中");
+            /*
+            System.out.println(String.format("head=%d, tail=%d",entity2.getHead(), entity2.getTail()));
+            System.out.println(nonTagContent.length());
+            System.out.println(nonTagContent);*/
+            successed = false;
+            CausedBy += "  选中的实体e2：‘" + nonTagContent.substring(entity2.getHead(),entity2.getTail())
+                    + "’ 不存在于实体标注中";
+        }else{
+            //log.info("---------------找到的实体名2为：" + coverEntities.get(0).getGlobalEntity().getEntityName());
+            record.setStmtEntity2(coverEntities.get(0)); // 第一个覆盖了的实体
         }
-        log.info("---------------找到的实体名2为：" + coverEntities.get(0).getGlobalEntity().getEntityName());
-        record.setStmtEntity2(coverEntities.get(0)); // 第一个覆盖了的实体
         record.setContentToFront();
-        return checkRes;
+        return new Pair<>(successed, CausedBy);
     }
 
     @Transactional

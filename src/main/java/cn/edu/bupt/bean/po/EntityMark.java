@@ -123,8 +123,8 @@ public class EntityMark {
         return tagContent.replace("></o>",">"); // 最后消除紧跟在别的实体后面的的</o>
     }
 
-    public List<Pair<Integer, Integer>> getEntitiesLoc(String content){
-        List<Pair<Integer, Integer>> entities = new ArrayList<>();
+    public List<Pair<Integer, Pair<Integer, String>>> getEntitiesLoc(String content){
+        List<Pair<Integer, Pair<Integer, String>>> entities = new ArrayList<>();
         //  类似getFullContent, 找</tag> 的位置，并构造出原始字符串
         Matcher matcher = tagPatternTail.matcher(content);
 
@@ -138,7 +138,8 @@ public class EntityMark {
             nonTagContent.append(content.substring(end, start));
             int nonTagEnd = nonTagContent.length();
             if(!tag.equals(otherTagTail)) {  // 上一个end到这一个start之间是一个实体
-                entities.add(new Pair<>(nonTagStart, nonTagEnd));
+                Pair<Integer, String> value = new Pair<>(nonTagEnd,tag);
+                entities.add(new Pair<>(nonTagStart, value));
                 entitiesStr.append(nonTagContent.toString().substring(nonTagStart, nonTagEnd) + ",");
             }
             end = matcher.end();

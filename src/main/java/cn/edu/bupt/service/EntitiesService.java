@@ -75,15 +75,14 @@ public class EntitiesService {
     }
 
     public List<StmtEntities> dealWithEntitiesModify(EntityMark record){
-        List<Pair<Integer, Integer>> curEntitiesLoc = record.getEntitiesLoc(record.getContent());
+        List<Pair<Integer, Pair<Integer, String>>> curEntitiesLoc = record.getEntitiesLoc(record.getContent());
         VerifyStatement statement = record.getStatement();
         List<StmtEntities> originalEntities = this.stmtEntitiesRepo.findAllByStatementOrderByHead(statement); // 取出句子原来的所有entities
-        List<StmtEntities> curEntities = StmtEntities.list2Entities(curEntitiesLoc, statement);
+        List<StmtEntities> curEntities = StmtEntities.list2EntitiesWithTag(curEntitiesLoc, statement);
         List<StmtEntities> resEntities = new ArrayList<>();  // 最终的所有实体（先放修改前后都没改变的实体）
         List<StmtEntities> updateEntities = new ArrayList<>(); // 实际发生了更新的实体
         for(StmtEntities originalEntity: originalEntities){
             for(StmtEntities curEntity: curEntities){
-
                 if(originalEntity.isIntersect(curEntity)){ // 原实体与某个现实体有交集，视作这个原实体的变化
                     if(!originalEntity.isEqual(curEntity))
                         originalEntity.updateSE(curEntity);

@@ -30,6 +30,9 @@ public class StmtEntities {
     @Column(name="entity_tail", nullable = false)
     private int tail;  //实体的尾位置
 
+    @Column(name = "entity_tag")
+    private String entityTag; //实体的类型
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stat_id")
     @JsonIgnore
@@ -49,15 +52,23 @@ public class StmtEntities {
 
     public StmtEntities(){}
 
-    public StmtEntities(VerifyStatement statement, int head, int tail){
+    private StmtEntities(VerifyStatement statement, int head, int tail){
         this.statement = statement;
         this.head = head;
         this.tail = tail;
     }
 
+    private StmtEntities(VerifyStatement statement, int head, int tail, String entityTag){
+        this.statement = statement;
+        this.head = head;
+        this.tail = tail;
+        this.entityTag = entityTag;
+    }
+
     public void updateSE(StmtEntities curValue){
         this.head = curValue.getHead();
         this.tail = curValue.getTail();
+        this.entityTag = curValue.getEntityTag();
     }
 
     public void updateGlobalEntity(String nonTagContent){
@@ -74,7 +85,9 @@ public class StmtEntities {
     }
 
     public boolean isEqual(StmtEntities another){
-        return another.head==this.head && another.tail==this.tail;
+        if(this.entityTag==null)
+            return false;
+        return another.head==this.head && another.tail==this.tail&&this.entityTag.equals(another.entityTag);
     }
 
     public static List<StmtEntities> list2Entities(List<Pair<Integer, Integer>> entitiesLoc, VerifyStatement statement){
@@ -84,6 +97,19 @@ public class StmtEntities {
             int start = entity.getKey();
             int end = entity.getValue();
             res_list.add(new StmtEntities(statement, start, end));
+        }
+        return  res_list;
+    }
+
+    public static List<StmtEntities> list2EntitiesWithTag(List<Pair<Integer, Pair<Integer, String>>> entitiesLoc, VerifyStatement statement){
+        // 把修改后的实体坐标转换成实体类，方便比较更新/插入实体表
+        List<StmtEntities> res_list = new ArrayList<>();
+        for(Pair<Integer, Pair<Integer, String>> entity: entitiesLoc){
+            int start = entity.getKey();
+            Pair<Integer, String> value = entity.getValue();
+            int end = value.getKey();
+            String tag = value.getValue();
+            res_list.add(new StmtEntities(statement, start, end, tag));
         }
         return  res_list;
     }

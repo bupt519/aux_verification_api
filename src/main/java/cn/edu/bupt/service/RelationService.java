@@ -59,7 +59,7 @@ public class RelationService {
         Optional<RelationReflect> refOptional = relaReflectRepo.findById(relationId);
         // 提交的关系id不存在
         if (!refOptional.isPresent()) {
-            return ResponseResult.of("审批失败", null);
+            return ResponseResult.of("审批失败", "提交的关系id不存在");
         }
 
         record.setContent(content);
@@ -87,7 +87,7 @@ public class RelationService {
         // 所属段落没有分配审批人或分配的审批人和用户id不相等
         if (recordStmt == null || recordStmt.getVerUser() == null ||
                 userId != recordStmt.getVerUser().getId()) {
-            return ResponseResult.of("审批失败", "所属段落没有分配审批人或分配的审批人和用户id不相等");
+            return ResponseResult.of("关系添加失败", "所属段落没有分配审批人或分配的审批人和用户id不相等");
         }
         Optional<RelationReflect> refOptional = relaReflectRepo.findById(relationId);
 

@@ -62,15 +62,9 @@ public class EntitiesService {
                 2、写一个函数，输入修改前后的文本，得出若干对(start,end), 用来查对应的stmtEntities
                 3、比对(start,end), 若存在差异但有交集，则确定是变更后的，替换
              */
+            this.dealWithEntitiesModify(record);
         }
         entityMarkRepo.save(record);
-        // 如果该段落所有文本全部审核完毕，更新段落表的状态
-//        if (relationMarkRepo.countByPassedAndStatement(-1, record.getStatement()) == 0 &&
-//                entityMarkRepo.countByPassedAndStatement(-1, record.getStatement()) == 0) {
-//            VerifyStatement statement = record.getStatement();
-//            statement.setState(2);
-//            verStateRepo.save(statement);
-//        }
         return ResponseResult.of("审批成功", null);
     }
 

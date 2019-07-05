@@ -13,14 +13,14 @@ public class RelationReflectVo {
 
     @Data
     public static class RelationVo{
-        private long id;
+        private long relationId;
         private String relationName;
     }
 
     public void addRelations(List<RelationReflect> originRelations){
         for (RelationReflect originRelation: originRelations) {
             RelationVo vo = new RelationVo();
-            vo.setId(originRelation.getId());
+            vo.setRelationId(originRelation.getId());
             vo.setRelationName(originRelation.getRName());
             this.relationList.add(vo);
         }

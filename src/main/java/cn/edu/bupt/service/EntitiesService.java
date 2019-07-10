@@ -51,17 +51,15 @@ public class EntitiesService {
             return ResponseResult.of("审批失败", "提交的内容还没有分配审批人或系统记录的审批人和用户不一致");
         }
 
+        content = EntityMark.recoverTagContent(content);
         record.setPassed(passed);
         record.setVerDate(new Date());
-        record.setContent(content);
+        System.out.println("before change :"+ record.getContent());
         record.setDescription(description);
-        boolean hasChange = record.updateVerifyResult();
+        boolean hasChange = record.updateVerifyResult(content);
+        record.setContent(content);
         if(hasChange){
-            /*  通过且发生了修改，需要获取并处理所有的修改,步骤为：
-                1、根据entity的statid取出所有的stmtEntities
-                2、写一个函数，输入修改前后的文本，得出若干对(start,end), 用来查对应的stmtEntities
-                3、比对(start,end), 若存在差异但有交集，则确定是变更后的，替换
-             */
+            /*  通过且发生了修改，需要获取并处理所有的修改*/
             this.dealWithEntitiesModify(record);
         }
         entityMarkRepo.save(record);
@@ -70,8 +68,10 @@ public class EntitiesService {
 
     public List<StmtEntities> dealWithEntitiesModify(EntityMark record){
         List<Pair<Integer, Pair<Integer, String>>> curEntitiesLoc = record.getEntitiesLoc(record.getContent());
+        System.out.println("now :"+ record.getContent());
         VerifyStatement statement = record.getStatement();
-        List<StmtEntities> originalEntities = this.stmtEntitiesRepo.findAllByStatementOrderByHead(statement); // 取出句子原来的所有entities
+        // 取出句子原来的所有entities
+        List<StmtEntities> originalEntities = this.stmtEntitiesRepo.findAllByStatementOrderByHead(statement);
         List<StmtEntities> curEntities = StmtEntities.list2EntitiesWithTag(curEntitiesLoc, statement);
         List<StmtEntities> resEntities = new ArrayList<>();  // 最终的所有实体（先放修改前后都没改变的实体）
         List<StmtEntities> updateEntities = new ArrayList<>(); // 实际发生了更新的实体
@@ -152,7 +152,6 @@ public class EntitiesService {
         this.stmtEntitiesRepo.deleteById(toRemoveRecord.getId());
     }
 
-    @Transactional
     void deleteGlobalEntitiesByCountEqualsZERO(){
         // 删除所有计数值为0的全局实体
         this.globalEntitiesRepo.deleteAllByCountEquals(0);

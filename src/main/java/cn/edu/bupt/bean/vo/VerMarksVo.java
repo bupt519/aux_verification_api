@@ -57,7 +57,7 @@ public class VerMarksVo {
     public void addEntities(EntityMark originMark){
         MarkVo vo = new MarkVo();
         vo.setId(originMark.getId());
-        vo.setContent(originMark.getContent());
+        vo.setContent(originMark.getFullTagContent());
         vo.setPassed(originMark.getPassed());
         vo.setReviewed(originMark.getReviewed());
         vo.setVerDate(originMark.getVerDate());

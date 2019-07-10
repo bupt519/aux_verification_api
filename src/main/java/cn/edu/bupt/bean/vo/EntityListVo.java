@@ -31,10 +31,10 @@ public class EntityListVo {
 
         public EntityHistory(EntityMark mark) {
             BeanUtils.copyProperties(mark, this);
+            this.content = mark.getFullTagContent();
             this.statId = mark.getStatement().getId();
             this.pdfUrl = mark.getStatement().getPdfUrl();
             this.pdfNo = mark.getStatement().getPdfNo();
         }
     }
-
 }

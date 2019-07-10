@@ -105,7 +105,7 @@ public class RelationService {
 
     public Pair<Boolean, String> checkEntityExistence(RelationMark record){
         boolean successed = true;
-        String CausedBy = "Casued By:";
+        String CausedBy = "";
 
         List<Pair<Integer, Integer>> entitiesLoc = record.getEntitiesLoc(record.getContent());
         VerifyStatement statement = record.getStatement();
@@ -120,7 +120,7 @@ public class RelationService {
         if(coverEntities.size() == 0){
             record.setStmtEntity1(null);
             successed = false;
-            CausedBy += "  选中的实体e1：‘" + nonTagContent.substring(entity1.getHead(),entity1.getTail())
+            CausedBy += " 选中的实体e1：‘" + nonTagContent.substring(entity1.getHead(),entity1.getTail())
                     + "’ 不存在于实体标注中";
         }else {
             //log.info("---------------找到的实体1名为：" + coverEntities.get(0).getGlobalEntity().getEntityName());
@@ -136,7 +136,7 @@ public class RelationService {
             System.out.println(nonTagContent.length());
             System.out.println(nonTagContent);*/
             successed = false;
-            CausedBy += "  选中的实体e2：‘" + nonTagContent.substring(entity2.getHead(),entity2.getTail())
+            CausedBy += " 选中的实体e2：‘" + nonTagContent.substring(entity2.getHead(),entity2.getTail())
                     + "’ 不存在于实体标注中";
         }else{
             //log.info("---------------找到的实体名2为：" + coverEntities.get(0).getGlobalEntity().getEntityName());

@@ -1,5 +1,6 @@
 package cn.edu.bupt.bean.po;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import javafx.util.Pair;
 import lombok.Data;
@@ -47,22 +48,22 @@ public class RelationMark {
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "stat_id")
-    @JsonIgnoreProperties("relationMarks")
+    @JsonIgnore
     private VerifyStatement statement;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stmt_e1")
-    @JsonIgnoreProperties("marks_e1")
+    @JsonIgnore
     private StmtEntities stmtEntity1;   // 存放标注实体在statement实体表里的id
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stmt_e2")
-    @JsonIgnoreProperties("marks_e2")
+    @JsonIgnore
     private StmtEntities stmtEntity2;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "relation_id")
-    @JsonIgnoreProperties("marks")
+    @JsonIgnore
     private RelationReflect reflect;
 
     public RelationMark(){ }

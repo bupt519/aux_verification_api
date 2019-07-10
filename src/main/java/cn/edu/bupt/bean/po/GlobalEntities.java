@@ -1,5 +1,6 @@
 package cn.edu.bupt.bean.po;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
@@ -23,7 +24,7 @@ public class GlobalEntities {
     private Integer count;
 
     @OneToMany(mappedBy = "globalEntity", fetch = FetchType.LAZY)
-    @JsonIgnoreProperties("globalEntity")
+    @JsonIgnore
     private List<StmtEntities> stmtEntities;
 
     public GlobalEntities(){}

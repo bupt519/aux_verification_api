@@ -11,7 +11,6 @@ import java.util.List;
 
 @Entity
 @Table(name = "statement_entities")   //  单个句子的实体词典，包括实体编号（全局），实体编号（单句）和实体在这句话的开头位置和结尾位置
-@JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler", "fieldHandler"})
 @Data
 public class StmtEntities {
 
@@ -21,7 +20,7 @@ public class StmtEntities {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "entity_id")
-    @JsonIgnoreProperties("StmtEntities")
+    @JsonIgnore
     private GlobalEntities globalEntity;  // 对应的全局实体号
 
     @Column(name="entity_head", nullable = false)
@@ -39,11 +38,11 @@ public class StmtEntities {
     private VerifyStatement statement;
 
     @OneToMany(mappedBy = "stmtEntity1",fetch = FetchType.LAZY)
-    @JsonIgnoreProperties("stmtEntity1")
+    @JsonIgnore
     private List<RelationMark> marks_e1;
 
     @OneToMany(mappedBy = "stmtEntity2",fetch = FetchType.LAZY)
-    @JsonIgnoreProperties("stmtEntity2")
+    @JsonIgnore
     private List<RelationMark> marks_e2;
 
     public List<RelationMark> getMarks_e1() {

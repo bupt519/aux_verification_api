@@ -1,5 +1,6 @@
 package cn.edu.bupt.bean.po;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import javafx.util.Pair;
 import lombok.Data;
@@ -47,21 +48,20 @@ public class EntityMark {
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "stat_id")
-    @JsonIgnoreProperties("entityMarks")
+    @JsonIgnore
     private VerifyStatement statement;
 
-    public boolean updateVerifyResult(){
-        if (this.content.equals(this.getOriginContent())) { //没有发生修改
+    public boolean updateVerifyResult(String newContent){
+        if (this.content.equals(newContent)) { //没有发生修改
             if (this.passed == 0) this.setVerifyResult(VerifyResult.DENIED.ordinal()); //没有通过- 拒绝
             else this.setVerifyResult(VerifyResult.ACCEPT.ordinal()); // 通过 - 直接通过
         } else {  //发生了修改
             if (this.passed == 0) this.setVerifyResult(VerifyResult.MODIFY_DENIED.ordinal());
             else {
                 this.setVerifyResult(VerifyResult.MODIFY_ACCEPT.ordinal());
-                return true;
             }
         }
-        return false;
+        return (this.passed == 1); //只要是通过的情况就需要更新stmtEntities
     }
 
     private static String tagPatternTailStr = "</[on][a-z]?>";
@@ -88,7 +88,7 @@ public class EntityMark {
             end = matcher.end();
         }
 
-        String fullTagContent = new String("");
+        String fullTagContent = "";
         end = this.content.length(); // 实际上若数据正确的话，上一个循环结束后end就应该在句子末尾
         while(!tailStack.empty()){
             Pair<Integer, String> tagUnit = tailStack.pop();

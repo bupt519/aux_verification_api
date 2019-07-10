@@ -50,7 +50,7 @@ public class VerifyController {
         ResponseResult<String> result = entitiesService.dealWithEntity(identity.getId(), param.getId(),
                 param.getStatId(), param.getContent(), param.getPassed(), param.getDescription());
         if(result.getResult() != null )  // 存在错误理由，即失败
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
         return ResponseEntity.ok(result);
     }
 
@@ -65,8 +65,9 @@ public class VerifyController {
         }
         ResponseResult<String> result = relationService.dealWithRelation(identity.getId(), param.getId(), param.getStatId(),
                 param.getContent(), param.getPassed(), param.getRelationId(), param.getDescription());
+        //System.out.println(result.getMessage() + result.getResult().toString());
         if(result.getResult() != null )  // 存在错误理由，即失败
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
         return ResponseEntity.ok(result);
     }
 
@@ -81,8 +82,9 @@ public class VerifyController {
 
         ResponseResult<String> result = relationService.addNewRelation(identity.getId(), param.getId(), param.getStatId(),
                 param.getContent(), param.getPassed(), param.getRelationId(), param.getDescription());
+        //System.out.println(result.getMessage() + result.getResult().toString());
         if(result.getResult() != null )  // 存在错误理由，即失败
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
         return ResponseEntity.ok(result);
     }
 

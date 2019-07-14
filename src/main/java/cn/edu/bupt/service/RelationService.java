@@ -62,15 +62,17 @@ public class RelationService {
             return ResponseResult.of("审批失败", "提交的关系id不存在");
         }
 
-        record.setContent(content);
         record.setDescription(description);
         record.setReflect(refOptional.get());
-        //  检查待更新的content， 其中的文本是否合法
-        Pair<Boolean, String> checkEntity = this.checkEntityExistence(record);
-        if (!checkEntity.getKey()){ // 实体不合法
-            record.setPassed(-1);
-            this.relationMarkRepo.save(record);
-            return ResponseResult.of("审批失败", checkEntity.getValue());
+        //(当关系数据通过的时候)  检查待更新的content， 其中的文本是否合法
+        if(passed == 1) {
+            record.setContent(content);
+            Pair<Boolean, String> checkEntity = this.checkEntityExistence(record);
+            if (!checkEntity.getKey()) { // 实体不合法
+                record.setPassed(-1);
+                this.relationMarkRepo.save(record);
+                return ResponseResult.of("审批失败", checkEntity.getValue());
+            }
         }
         record.setPassed(passed);
         record.setVerDate(new Date());

@@ -109,16 +109,15 @@ public class EntityMark {
         Matcher matcher = tagPatternHead.matcher(content);
         String tagContent = matcher.replaceAll(otherTagTail);
         String tagPattern = "</n[a-z]>$";
-        boolean hasTail = tagPattern.matches(tagContent);
+
         Pattern pattern = Pattern.compile(tagPattern);
         matcher = pattern.matcher(tagContent);
         if(!matcher.find())
             tagContent = tagContent.concat(otherTagTail); //补上结尾的</o>
 
-        tagPattern = "^" + otherTagTail;
-        boolean hasHead = tagPattern.matches(tagContent);
+        boolean hasHead = otherTagTail.equals(tagContent.substring(0, 4));
         if(hasHead)
-            tagContent = tagContent.substring(3); // 去除首部的<o>
+            tagContent = tagContent.substring(4); // 去除首部的<o>
 
         return tagContent.replace("></o>",">"); // 最后消除紧跟在别的实体后面的的</o>
     }

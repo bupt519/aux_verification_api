@@ -123,10 +123,10 @@ public class UserService {
             reflectsVos.add(reflectVo);
         }
         List<RelationListVo.RelationHistory> relations = new ArrayList<>();
-        for (RelationMark mark : pageResult) {
+        for (RelationMark mark : pageResult.getContent()) {
             relations.add(new RelationListVo.RelationHistory(mark, reflectsVos));
         }
-        return new RelationListVo(pageNo, pageResult.getNumberOfElements(), relations);
+        return new RelationListVo(pageResult.getTotalElements(), pageNo, relations);
     }
 
 }

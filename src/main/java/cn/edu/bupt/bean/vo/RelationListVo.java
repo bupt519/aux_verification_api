@@ -13,8 +13,8 @@ import java.util.List;
 @AllArgsConstructor
 public class RelationListVo {
 
-    private long pageNo;
     private long totalCount;
+    private long pageNo;
     private List<RelationHistory> data;
 
     @Data

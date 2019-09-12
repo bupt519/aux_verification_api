@@ -71,6 +71,7 @@ public class VerMarksVo {
         for (RelationMark originMark : originMarks) {
             MarkVo vo = new MarkVo();
             vo.setId(originMark.getId());
+            originMark.setContentToFront();
             vo.setContent(originMark.getContent());
             vo.setPassed(originMark.getPassed());
             vo.setReviewed(originMark.getReviewed());

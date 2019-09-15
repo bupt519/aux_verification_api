@@ -133,12 +133,14 @@ public class EntitiesService {
         List<RelationMark> markWithE1 = toRemoveRecord.getMarks_e1();
         for(RelationMark relation: markWithE1){
             relation.setStmtEntity1(null);
+            relation.setContentToFront();
             this.relationMarkRepo.save(relation);
         }
 
         List<RelationMark> markWithE2 = toRemoveRecord.getMarks_e2();
         for(RelationMark relation: markWithE2){
             relation.setStmtEntity2(null);
+            relation.setContentToFront();
             this.relationMarkRepo.save(relation);
         }
 

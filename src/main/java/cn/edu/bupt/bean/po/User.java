@@ -26,7 +26,7 @@ public class User {
 
     private String password;
 
-    @Column(columnDefinition = "varchar(255) default 'admin'")
+    @Column(columnDefinition = "varchar(255) default 'annotator'")
     private String role;
 
     @OneToMany(mappedBy = "verUser", fetch = FetchType.LAZY)

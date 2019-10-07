@@ -57,7 +57,7 @@ public class UserService {
         user.setPassword(encryptedPsd);
         user.setName("数据审核员");
         user.setAvatar("/avatar.2.jpg");
-        user.setRole("admin");
+        user.setRole("annotator");
         user = userRepo.save(user);
         return user;
     }
@@ -100,6 +100,11 @@ public class UserService {
         Optional<User> userOptional = userRepo.findById(userId);
         if (!userOptional.isPresent()) return null;
         List<VerifyStatement> stats = verStateRepo.findByVerUser(userOptional.get());
+        return this.pageAbleEntities(stats, pageNo, pageSize);
+    }
+
+    @Transactional
+    public EntityListVo pageAbleEntities(List<VerifyStatement> stats, /*int passed, */int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.Direction.DESC, "verDate");
         Page<EntityMark> pageResult = entityMarkRepo.findByStatementIn(stats, pageable);
         List<EntityListVo.EntityHistory> entities = new ArrayList<>();
@@ -114,6 +119,11 @@ public class UserService {
         Optional<User> userOptional = userRepo.findById(userId);
         if (!userOptional.isPresent()) return null;
         List<VerifyStatement> stats = verStateRepo.findByVerUser(userOptional.get());
+        return this.pageAbleRelations(stats, pageNo, pageSize);
+    }
+
+    @Transactional
+    public RelationListVo pageAbleRelations(List<VerifyStatement> stats, /*int passed,*/ int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.Direction.DESC, "verDate");
         Page<RelationMark> pageResult = relationMarkRepo.findByStatementIn(/*passed,*/ stats, pageable);
         List<RelationReflect> reflects = relaReflectRepo.findAll();

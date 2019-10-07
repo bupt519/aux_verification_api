@@ -10,6 +10,8 @@ import java.util.Optional;
 public interface VerStateRepo extends JpaRepository<VerifyStatement, Long> {
     List<VerifyStatement> findByVerUser(User user);
 
+    List<VerifyStatement> findAllByVerUserNotNull();
+
     Optional<VerifyStatement> findFirstByState(int state);
 
     Optional<VerifyStatement> findByVerUserAndState(User user, int state);

@@ -13,5 +13,7 @@ public interface EntityMarkRepo extends JpaRepository<EntityMark, Long> {
 
     Page<EntityMark> findByStatementIn(List<VerifyStatement> statements, Pageable pageable);
 
+    Page<EntityMark> findByStatementIdIn(List<Long> statementsId, Pageable pageable);
+
     int countByPassedAndStatement(int passed, VerifyStatement statement);
 }

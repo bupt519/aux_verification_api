@@ -2,10 +2,7 @@ package cn.edu.bupt.controller;
 
 import cn.edu.bupt.bean.jo.UserInfoUpdateParam;
 import cn.edu.bupt.bean.po.User;
-import cn.edu.bupt.bean.vo.EntityListVo;
-import cn.edu.bupt.bean.vo.Identity;
-import cn.edu.bupt.bean.vo.RelationListVo;
-import cn.edu.bupt.bean.vo.UserInfoVo;
+import cn.edu.bupt.bean.vo.*;
 import cn.edu.bupt.constant.OauthConsts;
 import cn.edu.bupt.constant.ParamConsts;
 import cn.edu.bupt.service.AdminService;
@@ -54,5 +51,21 @@ public class AdminController {
 //        int interPassed = passed ? 1 : 0;
         RelationListVo marks = adminService.listRelations(pageNo, pageSize);
         return ResponseResult.of("success", marks);
+    }
+
+    @GetMapping("entities/count")
+    public ResponseResult<DataStatisticsVo> countEntities(HttpSession session) {
+        log.info("-------------Get admin/entities/count ------------------------------");
+        /*查询当前标注数据的计数状态*/
+        DataStatisticsVo counts = adminService.countEntities();
+        return ResponseResult.of("success", counts);
+    }
+
+    @GetMapping("relations/count")
+    public ResponseResult<DataStatisticsVo> countRelations(HttpSession session) {
+        log.info("-------------Get admin/relations/count ------------------------------");
+        /*查询当前标注数据的计数状态*/
+        DataStatisticsVo counts = adminService.countRelations();
+        return ResponseResult.of("success", counts);
     }
 }

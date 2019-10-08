@@ -2,6 +2,7 @@ package cn.edu.bupt.service;
 
 import cn.edu.bupt.bean.jo.UserInfoUpdateParam;
 import cn.edu.bupt.bean.po.*;
+import cn.edu.bupt.bean.vo.DataStatisticsVo;
 import cn.edu.bupt.bean.vo.EntityListVo;
 import cn.edu.bupt.bean.vo.Identity;
 import cn.edu.bupt.bean.vo.RelationListVo;
@@ -24,11 +25,15 @@ import java.util.Optional;
 public class AdminService extends UserService{
 
     private final VerStateRepo verStateRepo;
+    private final RelationMarkRepo relationMarkRepo;
+    private final EntityMarkRepo entityMarkRepo;
 
     @Autowired
     public AdminService(UserRepo userRepo, VerStateRepo verStateRepo, RelationMarkRepo relationMarkRepo, EntityMarkRepo entityMarkRepo, RelaReflectRepo relaReflectRepo) {
         super(userRepo, verStateRepo, relationMarkRepo, entityMarkRepo, relaReflectRepo);
         this.verStateRepo = verStateRepo;
+        this.relationMarkRepo = relationMarkRepo;
+        this.entityMarkRepo = entityMarkRepo;
     }
 
     @Transactional
@@ -43,4 +48,17 @@ public class AdminService extends UserService{
         return this.pageAbleRelations(statsId, pageNo, pageSize);
     }
 
+    public DataStatisticsVo countEntities(){
+        int passedCount = entityMarkRepo.countIdByPassed(1);
+        int rejectCount = entityMarkRepo.countIdByPassed(0);
+        int remainCount = entityMarkRepo.countIdByPassed(-1);
+        return new DataStatisticsVo(passedCount, rejectCount, remainCount);
+    }
+
+    public DataStatisticsVo countRelations(){
+        int passedCount = relationMarkRepo.countIdByPassed(1);
+        int rejectCount = relationMarkRepo.countIdByPassed(0);
+        int remainCount = relationMarkRepo.countIdByPassed(-1);
+        return new DataStatisticsVo(passedCount, rejectCount, remainCount);
+    }
 }

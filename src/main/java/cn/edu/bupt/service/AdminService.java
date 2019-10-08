@@ -33,14 +33,14 @@ public class AdminService extends UserService{
 
     @Transactional
     public EntityListVo listEntities(int pageNo, int pageSize) {
-        List<VerifyStatement> stats = verStateRepo.findAllByVerUserNotNull();
-        return this.pageAbleEntities(stats, pageNo, pageSize);
+        List<Long> statsId = verStateRepo.findIdByVerUserNotNull();
+        return this.pageAbleEntities(statsId, pageNo, pageSize);
     }
 
     @Transactional
     public RelationListVo listRelations(int pageNo, int pageSize) {
-        List<VerifyStatement> stats = verStateRepo.findAllByVerUserNotNull();
-        return this.pageAbleRelations(stats, pageNo, pageSize);
+        List<Long> statsId = verStateRepo.findIdByVerUserNotNull();
+        return this.pageAbleRelations(statsId, pageNo, pageSize);
     }
 
 }

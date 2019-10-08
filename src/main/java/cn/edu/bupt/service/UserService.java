@@ -99,14 +99,15 @@ public class UserService {
     public EntityListVo listEntities(long userId, /*int passed, */int pageNo, int pageSize) {
         Optional<User> userOptional = userRepo.findById(userId);
         if (!userOptional.isPresent()) return null;
-        List<VerifyStatement> stats = verStateRepo.findByVerUser(userOptional.get());
-        return this.pageAbleEntities(stats, pageNo, pageSize);
+        //List<VerifyStatement> stats = verStateRepo.findByVerUser(userOptional.get());
+        List<Long> statsId = verStateRepo.findIdByVerUser(userOptional.get().getId());
+        return this.pageAbleEntities(statsId, pageNo, pageSize);
     }
 
     @Transactional
-    public EntityListVo pageAbleEntities(List<VerifyStatement> stats, /*int passed, */int pageNo, int pageSize) {
+    public EntityListVo pageAbleEntities(List<Long> statsId, /*int passed, */int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.Direction.DESC, "verDate");
-        Page<EntityMark> pageResult = entityMarkRepo.findByStatementIn(stats, pageable);
+        Page<EntityMark> pageResult = entityMarkRepo.findByStatementIdIn(statsId, pageable);
         List<EntityListVo.EntityHistory> entities = new ArrayList<>();
         for (EntityMark mark : pageResult.getContent()) {
             entities.add(new EntityListVo.EntityHistory(mark));
@@ -118,14 +119,15 @@ public class UserService {
     public RelationListVo listRelations(long userId, /*int passed,*/ int pageNo, int pageSize) {
         Optional<User> userOptional = userRepo.findById(userId);
         if (!userOptional.isPresent()) return null;
-        List<VerifyStatement> stats = verStateRepo.findByVerUser(userOptional.get());
-        return this.pageAbleRelations(stats, pageNo, pageSize);
+        //List<VerifyStatement> stats = verStateRepo.findByVerUser(userOptional.get());
+        List<Long> statsId = verStateRepo.findIdByVerUser(userOptional.get().getId());
+        return this.pageAbleRelations(statsId, pageNo, pageSize);
     }
 
     @Transactional
-    public RelationListVo pageAbleRelations(List<VerifyStatement> stats, /*int passed,*/ int pageNo, int pageSize) {
+    public RelationListVo pageAbleRelations(List<Long> statsId, /*int passed,*/ int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.Direction.DESC, "verDate");
-        Page<RelationMark> pageResult = relationMarkRepo.findByStatementIn(/*passed,*/ stats, pageable);
+        Page<RelationMark> pageResult = relationMarkRepo.findByStatementIdIn(statsId, pageable);
         List<RelationReflect> reflects = relaReflectRepo.findAll();
         List<RelationListVo.Reflect> reflectsVos = new ArrayList<>();
         for (RelationReflect reflect : reflects) {

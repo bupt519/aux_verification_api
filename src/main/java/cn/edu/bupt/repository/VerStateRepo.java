@@ -3,6 +3,7 @@ package cn.edu.bupt.repository;
 import cn.edu.bupt.bean.po.User;
 import cn.edu.bupt.bean.po.VerifyStatement;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +12,12 @@ public interface VerStateRepo extends JpaRepository<VerifyStatement, Long> {
     List<VerifyStatement> findByVerUser(User user);
 
     List<VerifyStatement> findAllByVerUserNotNull();
+
+    @Query(value="select v.id from VerifyStatement v where v.verUser.id is not NULL ")
+    List<Long> findIdByVerUserNotNull();
+
+    @Query(value="select v.id from VerifyStatement v where v.verUser.id=?1")
+    List<Long> findIdByVerUser(Long user_id);
 
     Optional<VerifyStatement> findFirstByState(int state);
 

@@ -13,5 +13,6 @@ public class Identity {
     private String clientId; //可以是Oauth2.0中的client_id，也可以是一般的username
     private Long duration; // 有效时长，单位毫秒
     private boolean isLogin;
+    private String role; //用户类型
 
 }

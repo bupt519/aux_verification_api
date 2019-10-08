@@ -64,6 +64,7 @@ public class OauthController {
             identity.setId(targetUser.getId());
             identity.setIssuer(envConsts.TOKEN_ISSUER);
             identity.setClientId(targetUser.getEmail());
+            identity.setRole(targetUser.getRole());
             identity.setDuration(envConsts.TOKEN_DURATION);
             log.error("{}", identity);
             String token = TokenUtil.createToken(identity, envConsts.TOKEN_API_KEY_SECRET);

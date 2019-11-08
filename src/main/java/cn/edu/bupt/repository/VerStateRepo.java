@@ -19,6 +19,9 @@ public interface VerStateRepo extends JpaRepository<VerifyStatement, Long> {
     @Query(value="select v.id from VerifyStatement v where v.verUser.id=?1")
     List<Long> findIdByVerUser(Long user_id);
 
+    @Query(value="select v.id from VerifyStatement v where v.verUser.id=?1 and v.id=?2")
+    List<Long> findIdByVerUserAndId(Long user_id, Long stmt_id);
+
     Optional<VerifyStatement> findFirstByState(int state);
 
     Optional<VerifyStatement> findByVerUserAndState(User user, int state);

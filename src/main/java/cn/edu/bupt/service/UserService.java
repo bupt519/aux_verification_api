@@ -96,17 +96,21 @@ public class UserService {
     }
 
     @Transactional
-    public EntityListVo listEntities(long userId, /*int passed, */int pageNo, int pageSize) {
+    public EntityListVo listEntities(long userId, /*int passed, */int pageNo, int pageSize, long stmtId) {
         Optional<User> userOptional = userRepo.findById(userId);
         if (!userOptional.isPresent()) return null;
         //List<VerifyStatement> stats = verStateRepo.findByVerUser(userOptional.get());
-        List<Long> statsId = verStateRepo.findIdByVerUser(userOptional.get().getId());
+        List<Long> statsId;
+        if(stmtId == -1)
+            statsId = verStateRepo.findIdByVerUser(userOptional.get().getId());
+        else
+            statsId = verStateRepo.findIdByVerUserAndId(userOptional.get().getId(), stmtId);
         return this.pageAbleEntities(statsId, pageNo, pageSize);
     }
 
     @Transactional
     public EntityListVo pageAbleEntities(List<Long> statsId, /*int passed, */int pageNo, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.Direction.DESC, "verDate");
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.Direction.DESC, "statement");
         Page<EntityMark> pageResult = entityMarkRepo.findByStatementIdIn(statsId, pageable);
         List<EntityListVo.EntityHistory> entities = new ArrayList<>();
         for (EntityMark mark : pageResult.getContent()) {
@@ -116,17 +120,20 @@ public class UserService {
     }
 
     @Transactional
-    public RelationListVo listRelations(long userId, /*int passed,*/ int pageNo, int pageSize) {
+    public RelationListVo listRelations(long userId, /*int passed,*/ int pageNo, int pageSize, long stmtId) {
         Optional<User> userOptional = userRepo.findById(userId);
         if (!userOptional.isPresent()) return null;
-        //List<VerifyStatement> stats = verStateRepo.findByVerUser(userOptional.get());
-        List<Long> statsId = verStateRepo.findIdByVerUser(userOptional.get().getId());
+        List<Long> statsId;
+        if(stmtId == -1)
+            statsId = verStateRepo.findIdByVerUser(userOptional.get().getId());
+        else
+            statsId = verStateRepo.findIdByVerUserAndId(userOptional.get().getId(), stmtId);
         return this.pageAbleRelations(statsId, pageNo, pageSize);
     }
 
     @Transactional
     public RelationListVo pageAbleRelations(List<Long> statsId, /*int passed,*/ int pageNo, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.Direction.DESC, "verDate");
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.Direction.DESC, "statement");
         Page<RelationMark> pageResult = relationMarkRepo.findByStatementIdIn(statsId, pageable);
         List<RelationReflect> reflects = relaReflectRepo.findAll();
         List<RelationListVo.Reflect> reflectsVos = new ArrayList<>();

@@ -39,7 +39,8 @@ public class UserController {
         Identity identity = (Identity) httpSession.getAttribute(OauthConsts.KEY_IDENTITY);
         int pageNo = (int) params.get(ParamConsts.pageNo);
         int pageSize = (int) params.get(ParamConsts.pageSize);
-        EntityListVo marks = userService.listEntities(identity.getId() /*interPassed*/, pageNo, pageSize);
+        long statId = ((Integer)params.get(ParamConsts.stmtId)).longValue();
+        EntityListVo marks = userService.listEntities(identity.getId() /*interPassed*/, pageNo, pageSize, statId);
         return ResponseResult.of("success", marks);
     }
 
@@ -52,8 +53,8 @@ public class UserController {
 //        boolean passed = (boolean) params.get("passed");
         int pageNo = (int) params.get(ParamConsts.pageNo);
         int pageSize = (int) params.get(ParamConsts.pageSize);
-//        int interPassed = passed ? 1 : 0;
-        RelationListVo marks = userService.listRelations(identity.getId(), /*interPassed,*/ pageNo, pageSize);
+        long statId = ((Integer)params.get(ParamConsts.stmtId)).longValue();
+        RelationListVo marks = userService.listRelations(identity.getId(), /*interPassed,*/ pageNo, pageSize, statId);
         return ResponseResult.of("success", marks);
     }
 

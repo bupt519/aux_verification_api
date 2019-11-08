@@ -96,15 +96,15 @@ public class UserService {
     }
 
     @Transactional
-    public EntityListVo listEntities(long userId, /*int passed, */int pageNo, int pageSize, long stmtId) {
+    public EntityListVo listEntities(long userId, /*int passed, */int pageNo, int pageSize, long statId) {
         Optional<User> userOptional = userRepo.findById(userId);
         if (!userOptional.isPresent()) return null;
         //List<VerifyStatement> stats = verStateRepo.findByVerUser(userOptional.get());
         List<Long> statsId;
-        if(stmtId == -1)
+        if(statId == -1)
             statsId = verStateRepo.findIdByVerUser(userOptional.get().getId());
         else
-            statsId = verStateRepo.findIdByVerUserAndId(userOptional.get().getId(), stmtId);
+            statsId = verStateRepo.findIdByVerUserAndId(userOptional.get().getId(), statId);
         return this.pageAbleEntities(statsId, pageNo, pageSize);
     }
 
@@ -120,14 +120,14 @@ public class UserService {
     }
 
     @Transactional
-    public RelationListVo listRelations(long userId, /*int passed,*/ int pageNo, int pageSize, long stmtId) {
+    public RelationListVo listRelations(long userId, /*int passed,*/ int pageNo, int pageSize, long statId) {
         Optional<User> userOptional = userRepo.findById(userId);
         if (!userOptional.isPresent()) return null;
         List<Long> statsId;
-        if(stmtId == -1)
+        if(statId == -1)
             statsId = verStateRepo.findIdByVerUser(userOptional.get().getId());
         else
-            statsId = verStateRepo.findIdByVerUserAndId(userOptional.get().getId(), stmtId);
+            statsId = verStateRepo.findIdByVerUserAndId(userOptional.get().getId(), statId);
         return this.pageAbleRelations(statsId, pageNo, pageSize);
     }
 

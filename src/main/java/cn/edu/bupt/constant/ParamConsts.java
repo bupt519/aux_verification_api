@@ -6,5 +6,5 @@ public class ParamConsts {
 
     public static final String pageSize = "pageSize";
 
-    public static final String stmtId = "stmtId";
+    public static final String statId = "statId";
 }

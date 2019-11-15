@@ -47,87 +47,23 @@ public class VerService {
         this.entiReflectRepo = entiReflectRepo;
     }
 
-    /*@Transactional
-    public ResponseResult<String> dealWithEntity(long userId, long entityId, long statId, String content, int passed,
-                                                 String description) {
-        EntityMark record = getEntity(entityId);
-        if (record == null)  // 审批文本不存在
-            return ResponseResult.of("审批失败", null);
-        // 提交的内容还没有分配审批人或系统记录的审批人id和用户id不相等
-        if (record.getStatement() == null || record.getStatement().getVerUser() == null
-                || record.getStatement().getVerUser().getId() != userId) {
-            return ResponseResult.of("审批失败", null);
-        }
-        // 审批文本所属段落的id和用户提交的段落id不相等
-        if (record.getStatement().getId() != statId)
-            return ResponseResult.of("审批失败", null);
-        record.setPassed(passed);
-        record.setVerDate(new Date());
-        record.setContent(content);
-        record.setDescription(description);
-        record.updateVerifyResult();
-        entityMarkRepo.save(record);
-        return ResponseResult.of("审批成功", null);
-    }
 
     @Transactional
-    public ResponseResult<String> dealWithRelation(long userId, long relationMarkId, long statId, String content,
-                                                   int passed, long relationId, String description) {
-        RelationMark record = getRelationMark(relationMarkId);
-        if (record == null) { // 审批文本不存在
-            return ResponseResult.of("审批失败", "审批文本不存在");
+    public boolean resetPreviousViewedStatement(long userId) {
+        Optional<VerifyStatement> statementOptional = Optional.empty();
+        Optional<User> user = userRepo.findById(userId);
+        if (user.isPresent()) { // 如果用户在上次审批时，没有将该段落的所有文本全部审核完毕
+            statementOptional = verStateRepo.findFirstByVerUserAndStateOrderByIdDesc(user.get(), VerifyStatement.State.END.ordinal());
         }
-        // 所属段落没有分配审批人或分配的审批人和用户id不相等
-        if (record.getStatement() == null || record.getStatement().getVerUser() == null ||
-                userId != record.getStatement().getVerUser().getId()) {
-            return ResponseResult.of("审批失败", null);
+
+        if (statementOptional.isPresent()) {  // 找到了这样的一条已有文本，将其复位
+            VerifyStatement statement = statementOptional.get();
+            statement.setState(VerifyStatement.State.STARTED.ordinal());
+            verStateRepo.save(statement);
+            return true;
         }
-        // 提交的段落id和文本所属段落的id不相等
-        if (record.getStatement().getId() != statId) {
-            return ResponseResult.of("审批失败", null);
-        }
-        Optional<RelationReflect> refOptional = relaReflectRepo.findById(relationId);
-        // 提交的关系id不存在
-        if (!refOptional.isPresent()) {
-            return ResponseResult.of("审批失败", null);
-        }
-        record.setContent(content);
-        record.setPassed(passed);
-        record.setVerDate(new Date());
-        record.setDescription(description);
-        record.setReflect(refOptional.get());
-        record.updateVerifyResult();
-        relationMarkRepo.save(record);
-        // 如果该段落所有文本全部审核完毕，更新段落表的状态
-//        if (relationMarkRepo.countByPassedAndStatement(-1, record.getStatement()) == 0 &&
-//                entityMarkRepo.countByPassedAndStatement(-1, record.getStatement()) == 0) {
-//            VerifyStatement statement = record.getStatement();
-//            statement.setState(2);
-//            verStateRepo.save(statement);
-//        }
-        return ResponseResult.of("审批成功", null);
+        return false;
     }
-
-    @Transactional
-    public ResponseResult<String> addNewRelation(long userId, long relationMarkId, long statId, String content,
-                                                   int passed, long relationId, String description) {
-        VerifyStatement recordStmt = getStatement(statId);
-        // 所属段落没有分配审批人或分配的审批人和用户id不相等
-        if (recordStmt == null || recordStmt.getVerUser() == null ||
-                userId != recordStmt.getVerUser().getId()) {
-            return ResponseResult.of("审批失败", "所属段落没有分配审批人或分配的审批人和用户id不相等");
-        }
-        Optional<RelationReflect> refOptional = relaReflectRepo.findById(relationId);
-        // 提交的关系id不存在
-        if (!refOptional.isPresent()) {
-            return ResponseResult.of("审批失败", "提交的关系id不存在");
-        }
-
-        RelationMark record = new RelationMark(content, passed, description, refOptional.get(), recordStmt);
-
-        relationMarkRepo.save(record);
-        return ResponseResult.of("关系添加成功", null);
-    }*/
 
     @Transactional
     public VerMarksVo curUnViewedStatement(long userId, int pageNo, int pageSize) {

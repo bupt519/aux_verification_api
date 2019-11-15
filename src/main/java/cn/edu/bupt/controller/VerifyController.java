@@ -109,6 +109,19 @@ public class VerifyController {
         return ResponseEntity.ok(ResponseResult.of("success", result));
     }
 
+    @PostMapping("prev")
+    public ResponseEntity<ResponseResult<String>> prevVerData(@RequestBody Map<String, Object> params, HttpSession session) {
+        log.info("-------------Post prev------------------------------");
+        Identity identity = (Identity) session.getAttribute(OauthConsts.KEY_IDENTITY);
+        boolean result = verService.resetPreviousViewedStatement(identity.getId());
+        if (result) {
+            return ResponseEntity.ok(ResponseResult.of("获取上一条数据成功", "获取上一条数据成功"));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ResponseResult.of("已经是第一条数据", "已经是第一条数据"));
+        }
+    }
+
     @PostMapping("next/begin")
     public ResponseEntity<ResponseResult<String>> startNext(@RequestBody Map<String, Object> params, HttpSession session) {
         log.info("-------------Post next/begin ------------------------------");

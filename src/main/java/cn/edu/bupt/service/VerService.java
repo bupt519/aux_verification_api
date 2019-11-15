@@ -134,32 +134,13 @@ public class VerService {
         Optional<VerifyStatement> statementOptional = Optional.empty();
         Optional<User> user = userRepo.findById(userId);
         if (user.isPresent()) { // 如果用户在上次审批时，没有将该段落的所有文本全部审核完毕
-            statementOptional = verStateRepo.findByVerUserAndState(user.get(), VerifyStatement.State.STARTED.ordinal());
+            statementOptional = verStateRepo.findFirstByVerUserAndState(user.get(), VerifyStatement.State.STARTED.ordinal());
         }
 //        if (!statementOptional.isPresent()) { // 查找第一条待审核的段落
 //            statementOptional = verStateRepo.findFirstByState(0);
 //        }
         if (statementOptional.isPresent()) {
             VerifyStatement statement = statementOptional.get();
-//            // 分配审核人
-//            statement.setVerUser(userRepo.getOne(userId));
-//            // 设置段落审核状态(开始审核但未全部审核完毕)
-//            statement.setState(1);
-//            verStateRepo.save(statement);
-//
-//            // 更新审批文本状态
-//            for (int i = 0, size = statement.getEntityMark().size(); i < size; ++i) {
-//                EntityMark mark = statement.getEntityMark().get(i);
-//                // 文本更新为已审核状态
-//                mark.setReviewed(1);
-//                entityMarkRepo.save(mark);
-//            }
-//            for (int i = 0, size = statement.getRelationMarks().size(); i < size; ++i) {
-//                RelationMark mark = statement.getRelationMarks().get(i);
-//                // 文本更新为已审核状态
-//                mark.setReviewed(1);
-//                relationMarkRepo.save(mark);
-//            }
             VerMarksVo result = new VerMarksVo();
             result.setId(statement.getId());
             result.setPdfUrl(statement.getPdfUrl());
@@ -207,7 +188,7 @@ public class VerService {
         Optional<VerifyStatement> statementOptional = Optional.empty();
         Optional<User> userOptional = userRepo.findById(id);
         if (userOptional.isPresent()) {  // 试图找到已经分配给这个用户的数据
-            statementOptional = verStateRepo.findByVerUserAndState(userOptional.get(), VerifyStatement.State.STARTED.ordinal());
+            statementOptional = verStateRepo.findFirstByVerUserAndState(userOptional.get(), VerifyStatement.State.STARTED.ordinal());
         }
         if (statementOptional.isPresent()) { // 存在这个已经分配过的数据
             if (completeLast) { // 标志已经完成这一条

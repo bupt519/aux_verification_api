@@ -24,7 +24,7 @@ public interface VerStateRepo extends JpaRepository<VerifyStatement, Long> {
 
     Optional<VerifyStatement> findFirstByState(int state);
 
-    Optional<VerifyStatement> findByVerUserAndState(User user, int state);
+    Optional<VerifyStatement> findFirstByVerUserAndState(User user, int state);
 
     List<VerifyStatement> findAllByIdGreaterThanEqual(long statementId);
 

@@ -136,7 +136,13 @@ public class VerService {
             }
         }
 
-        //分配一条新的数据
+        // 如果有下一条数据，则不分配，直接返回
+        statementOptional = verStateRepo.findFirstByVerUserAndState(userOptional.get(), VerifyStatement.State.STARTED.ordinal());
+        if (statementOptional.isPresent()) { // 存在这个已经分配过的数据
+            return true;
+        }
+
+        // 没有未审核的历史数据，分配一条新的数据
         statementOptional = verStateRepo.findFirstByState(VerifyStatement.State.UNSTARTED.ordinal());
         if (statementOptional.isPresent()) {
             VerifyStatement statement = statementOptional.get();
